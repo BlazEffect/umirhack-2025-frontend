@@ -14,15 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const passwordInput = document.getElementById('password');
   const submitButton = loginForm.querySelector('button[type="submit"]');
 
-  // Функция для показа сообщений
   function showMessage(message, type = 'error') {
-    // Удаляем предыдущие сообщения
     const existingMessage = loginForm.querySelector('.message-custom');
     if (existingMessage) {
       existingMessage.remove();
     }
 
-    // Создаем новое сообщение
     const messageDiv = document.createElement('div');
     messageDiv.className = `message-custom p-4 ${type === 'error' ? 'message-error' : 'message-success'}`;
     messageDiv.innerHTML = `
@@ -32,15 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-    // Вставляем сообщение перед формой
     loginForm.insertBefore(messageDiv, loginForm.firstChild);
 
-    // Добавляем обработчик для кнопки закрытия
     messageDiv.querySelector('.delete').addEventListener('click', function () {
       messageDiv.remove();
     });
 
-    // Автоматически скрываем успешные сообщения через 5 секунд
     if (type === 'success') {
       setTimeout(() => {
         if (messageDiv.parentNode) {
@@ -50,9 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Функция для показа ошибки поля
   function showFieldError(input, message) {
-    // Убираем существующие ошибки для этого поля
     hideFieldError(input);
 
     input.classList.add('input-error');
@@ -64,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
     input.parentNode.appendChild(helpDiv);
   }
 
-  // Функция для скрытия ошибки поля
   function hideFieldError(input) {
     input.classList.remove('input-error');
 
@@ -74,10 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Функция для показа/скрытия спиннера загрузки
   function setLoading(isLoading) {
     if (isLoading) {
-      // Пробуем стандартный Bulma лоадер
       submitButton.classList.add('is-loading');
       submitButton.disabled = true;
       submitButton.innerHTML = 'Загрузка...';
@@ -88,30 +77,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Функция для валидации email
   function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // Функция для валидации пароля
   function validatePassword(password) {
-    return password.length >= 1; // Минимум 1 символ для логина
+    return password.length >= 1;
   }
 
-  // Функция для валидации формы
   function validateForm() {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
-    // Убираем предыдущие стили ошибок
     [emailInput, passwordInput].forEach(input => {
       hideFieldError(input);
     });
 
     let isValid = true;
 
-    // Валидация email
     if (!email) {
       showFieldError(emailInput, 'Email обязателен для заполнения');
       isValid = false;
@@ -120,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // Валидация пароля
     if (!password) {
       showFieldError(passwordInput, 'Пароль обязателен для заполнения');
       isValid = false;
@@ -136,11 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return isValid;
   }
 
-  // Обработчик отправки формы
   loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    // Валидация формы
     if (!validateForm()) {
       return;
     }
@@ -153,8 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       setLoading(true);
 
-      // Отправляем запрос на бекенд
-      const response = await fetch('/api/login', { // Замените на ваш URL
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,9 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (!response.ok) {
-        // Обработка специфичных ошибок от сервера
         if (data.errors) {
-          // Если сервер возвращает детальные ошибки по полям
           Object.keys(data.errors).forEach(field => {
             const input = document.getElementById(field);
             if (input) {
@@ -177,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
           throw new Error('Пожалуйста, исправьте ошибки в форме');
         }
 
-        // Обработка стандартных ошибок аутентификации
         if (response.status === 401) {
           throw new Error('Неверный email или пароль');
         } else if (response.status === 404) {
@@ -189,13 +166,11 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.message || 'Произошла ошибка при авторизации');
       }
 
-      // Успешный логин
       showMessage('Успешный вход! Перенаправление...', 'success');
 
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('userData', JSON.stringify(data.user));
 
-// Всегда перенаправляем через loading.html
       setTimeout(() => {
         window.location.href = '/loading.html';
       }, 1500);
@@ -203,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Ошибка:', error);
 
-      // Показываем общее сообщение об ошибке, если нет ошибок по полям
       if (!loginForm.querySelector('.help.is-error')) {
         showMessage('Произошла ошибка при отправке формы');
       }
@@ -212,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Обработчики для сброса стилей ошибок при вводе
   const inputs = [emailInput, passwordInput];
   inputs.forEach(input => {
     input.addEventListener('input', function () {
@@ -222,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Дополнительная валидация email при потере фокуса
   emailInput.addEventListener('blur', function () {
     const email = this.value.trim();
     if (email && !validateEmail(email)) {
@@ -230,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Дополнительная валидация пароля при потере фокуса
   passwordInput.addEventListener('blur', function () {
     const password = this.value.trim();
     if (password && !validatePassword(password)) {
@@ -238,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Автоматическая очистка ошибок при загрузке страницы
   window.addEventListener('load', function () {
     [emailInput, passwordInput].forEach(input => {
       hideFieldError(input);
