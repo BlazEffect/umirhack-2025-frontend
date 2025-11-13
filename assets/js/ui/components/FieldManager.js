@@ -93,6 +93,10 @@ export class FieldManager {
   static setupFieldSelection() {
     const fieldItems = document.querySelectorAll('.field-item');
     const addFieldBtn = document.querySelector('.add-field-btn');
+    const backBtn = document.querySelector('.back-btn');
+
+    const fieldsListPanel = document.querySelector('.fields-panel');
+    const addFieldPanel = document.querySelector('.field-form').closest('.fields-panel');
 
     fieldItems.forEach(item => {
       item.addEventListener('click', function (e) {
@@ -108,10 +112,20 @@ export class FieldManager {
     if (addFieldBtn) {
       addFieldBtn.addEventListener('click', function (e) {
         e.preventDefault();
-        EventManager.emit('notification:show', {
-          message: 'Функция добавления поля в разработке',
-          type: 'info'
-        });
+
+        fieldsListPanel.classList.add('is-hidden');
+        addFieldPanel.classList.remove('is-hidden');
+
+        EventManager.emit('map:enableDrawing');
+      });
+    }
+
+    if (backBtn) {
+      backBtn.addEventListener('click', function() {
+        addFieldPanel.classList.add('is-hidden');
+        fieldsListPanel.classList.remove('is-hidden');
+
+        EventManager.emit('map:disableDrawing');
       });
     }
   }

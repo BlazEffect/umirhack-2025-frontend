@@ -502,6 +502,30 @@ body {
     z-index: 1000;
 }
 
+.field-form {
+    padding: 0;
+    display: block;
+}
+
+.fields-button {
+    background-color: var(--primary-color);
+}
+
+.control-form-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.back-btn {
+    background-color: #fff;
+    border: 1px solid #e1e1e1;
+    color: #1a1a1a;
+}
+
+.back-btn:hover {
+    background: #fed7d7;
+}
+
 @media screen and (max-width: 1023px) {
     .sidebar-container {
         transform: translateX(-100%);
