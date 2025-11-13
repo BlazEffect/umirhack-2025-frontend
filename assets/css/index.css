@@ -1,0 +1,240 @@
+* {
+    font-family: 'Open Sans', sans-serif
+}
+
+.header_logo {
+    padding: 5px;
+    background-color: #22c358;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px
+}
+
+.header_text {
+    color: #22c358;
+    font-size: 20px
+}
+
+.footer_logo {
+    padding: 5px;
+    background-color: #22c358;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px
+}
+
+.footer_text {
+    color: #22c358;
+    font-size: 20px
+}
+
+.section {
+    padding: 105px 1.5rem
+}
+
+.has-background-light .section {
+    padding: 111px 1.5rem
+}
+
+.card {
+    border-radius: 8px;
+    padding: 30px;
+    height: 100%;
+    transition: transform .3s ease, box-shadow .3s ease
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .1)
+}
+
+.footer {
+    padding: 20px 0
+}
+
+.gap-4 {
+    gap: 30px
+}
+
+.custom-margin-top {
+    margin-top: 30px !important;
+    margin-bottom: 46px !important
+}
+
+.custom-margin-top-advantages {
+    margin-top: 19px !important
+}
+
+.custom-login-button {
+    margin-right: 10px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid #e1e1e1;
+    color: #1a1a1a;
+    transition-duration: .5s;
+    background: #fff
+}
+
+.custom-login-button:hover {
+    background-color: #22c358;
+    color: #fff;
+    border-color: #22c358
+}
+
+.custom-register-button {
+    padding: 7px 12px;
+    background: #22c358;
+    color: #fff;
+    border-radius: 6px;
+    transition-duration: .5s;
+    border: 1px solid #22c358
+}
+
+.custom-register-button:hover {
+    background-color: #fff;
+    border: 1px solid #e1e1e1;
+    color: #1a1a1a
+}
+
+.custom-banner-login-button {
+    padding: 15px 30px;
+    background: #22c358;
+    color: #fff;
+    border-radius: 6px;
+    transition-duration: .5s;
+    border: 1px solid #22c358;
+    margin-right: 5px
+}
+
+.custom-banner-login-button:hover {
+    background-color: #fff;
+    color: #1a1a1a;
+    border-color: #e1e1e1
+}
+
+.custom-banner-register-button {
+    margin-right: 10px;
+    padding: 15px 30px;
+    border-radius: 6px;
+    border: 1px solid #e1e1e1;
+    color: #1a1a1a;
+    transition-duration: .5s;
+    background: #fff
+}
+
+.custom-banner-register-button:hover {
+    background-color: #22c358;
+    color: #fff;
+    border-color: #22c358
+}
+
+.navbar.is-fixed-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .1)
+}
+
+.main {
+    margin-top: 64px
+}
+
+.navbar-burger {
+    border: none;
+    background: 0 0;
+    color: #1a1a1a !important;
+    border-radius: 4px;
+    transition: background-color .3s ease
+}
+
+.navbar-burger:hover {
+    background-color: rgba(0, 0, 0, .05) !important;
+    color: #1a1a1a !important
+}
+
+.navbar-burger span {
+    background-color: #1a1a1a !important;
+    height: 2px
+}
+
+.navbar-burger span:nth-child(1) {
+    top: calc(50% - 8px)
+}
+
+.navbar-burger span:nth-child(2) {
+    top: calc(50% - 1px)
+}
+
+.navbar-burger span:nth-child(3) {
+    top: calc(50% + 6px)
+}
+
+.navbar-burger.is-active span:first-child {
+    top: calc(50% - (var(--bulma-burger-item-height)) / 2);
+}
+
+@media screen and (max-width: 1023px) {
+    .navbar-menu {
+        background-color: #fff;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, .1);
+        padding: 10px 0
+    }
+
+    .navbar-item .buttons {
+        flex-direction: column;
+        width: 100%
+    }
+
+    .custom-login-button, .custom-register-button {
+        margin: 5px 0;
+        text-align: center;
+        width: 100%;
+        justify-content: center
+    }
+
+    .custom-login-button {
+        margin-right: 0
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .section {
+        padding: 60px 1rem
+    }
+
+    .has-background-light .section {
+        padding: 60px 1rem
+    }
+
+    .gap-4 {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center
+    }
+
+    .footer .content {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center
+    }
+
+    .custom-margin-top {
+        margin-top: 20px !important;
+        margin-bottom: 30px !important
+    }
+
+    .custom-margin-top-advantages {
+        margin-top: 15px !important
+    }
+
+    .main {
+        margin-top: 52px
+    }
+
+    .banner_image {
+        display: none
+    }
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="assets/css/index.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/index.html">
+                    <div class="is-flex is-align-items-center">
+                        <img src="assets/images/logo.png" alt="логотип" class="header_logo mr-2">
+                        <p class="header_text has-text-weight-bold">AgriManage</p>
+                    </div>
+                </a>
+
+                <div class="navbar-burger" data-target="navbarMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a href="/auth/login/login.html" class="button custom-login-button">Войти</a>
+                            <a href="/auth/register/register.html" class="button custom-register-button">Регистрация</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="main">
+    <section class="section">
+        <div class="container">
+            <div class="columns is-vcentered is-justify-content-space-between">
+                <div class="column is-5">
+                    <h1 class="title is-1 has-text-weight-bold mb-5">
+                        AgriManage: Умное земледелие для успешного будущего
+                    </h1>
+                    <p class="subtitle is-5 has-text-grey mb-6 custom-margin-top">
+                        Комплексное управление полями, графиками посадки и севооборотом. Оптимизируйте свою ферму с помощью интеллектуальных решений.
+                    </p>
+                    <div class="buttons">
+                        <a href="/login.html" class="button custom-banner-login-button is-medium">Войти</a>
+                        <a href="/register.html" class="button custom-banner-register-button is-medium">Зарегистрироваться</a>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <figure class="image banner_image">
+                        <img src="assets/images/main-banner.png" alt="поля">
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section has-background-light">
+        <div class="container">
+            <div class="has-text-centered mb-6">
+                <h2 class="title is-2 has-text-weight-bold mb-4">
+                    Как AgriManage преобразует ваше хозяйство
+                </h2>
+                <p class="subtitle is-5 has-text-grey custom-margin-top-advantages">
+                    От планирования урожая до анализа данных — мы предоставляем инструменты для принятия обоснованных решений.
+                </p>
+            </div>
+
+            <div class="columns is-multiline">
+                <div class="column is-4">
+                    <div class="card has-text-centered">
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-4 mb-4">Планирование севооборота</h3>
+                                <p class="has-text-grey">Легко планируйте и управляйте севооборотом для повышения плодородия почвы и урожайности.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="card has-text-centered">
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-4 mb-4">Визуальные карты полей</h3>
+                                <p class="has-text-grey">Получите четкое представление о своих полях с интерактивными картами и границами.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="card has-text-centered">
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-4 mb-4">Сезонное отслеживание</h3>
+                                <p class="has-text-grey">Отслеживайте ключевые сезонные данные и события, чтобы принимать обоснованные решения.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="card has-text-centered">
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-4 mb-4">Сотрудничество в команде</h3>
+                                <p class="has-text-grey">Легко делитесь информацией и задачами с членами вашей команды фермы.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="card has-text-centered">
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-4 mb-4">Анализ урожайности</h3>
+                                <p class="has-text-grey">Повысьте прибыльность с помощью подробного анализа урожайности и прогнозирования.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="card has-text-centered">
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-4 mb-4">Универсальная панель</h3>
+                                <p class="has-text-grey">Все ваши сельскохозяйственные данные в одном интуитивно понятном и доступном месте.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="content is-flex is-justify-content-space-between is-align-items-center">
+            <div class="is-flex is-align-items-center">
+                <img src="assets/images/logo.png" alt="логотип" class="footer_logo mr-2">
+                <p class="footer_text has-text-weight-bold">AgriManage</p>
+            </div>
+            <div class="is-flex is-align-items-center gap-4">
+                <a href="#" class="has-text-grey">О нас</a>
+                <a href="#" class="has-text-grey">Функции</a>
+                <a href="#" class="has-text-grey">Политика конфиденциальности</a>
+                <a href="#" class="has-text-grey">Условия обслуживания</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="assets/js/index.js"></script>
+</body>
+</html>
