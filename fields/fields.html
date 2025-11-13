@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Поля</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="fields.css">
+    <link rel="stylesheet" href="../assets/css/ol.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+    <!--    <script src="assets/js/protect-page.js"></script>-->
+</head>
+<body>
+<header class="header">
+    <nav class="navbar is-fixed-top is-custom-navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item logo-container" href="/index.html">
+                <img src="../assets/images/logo.png" alt="логотип" class="header-logo">
+                <span class="header-text">AgriManage</span>
+            </a>
+
+            <div class="navbar-burger burger" data-target="navbarMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <div id="mainNavbar" class="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="field is-grouped is-align-items-center">
+                        <div class="control">
+                            <div class="dropdown">
+                                <div class="dropdown-trigger">
+                                    <button class="button is-small" aria-haspopup="true"
+                                            aria-controls="season-dropdown">
+                                        <span>Сезон 2024</span>
+                                        <span class="icon is-small">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </span>
+                                    </button>
+                                </div>
+                                <div class="dropdown-menu" id="season-dropdown" role="menu">
+                                    <div class="dropdown-content">
+                                        <a href="#" class="dropdown-item is-active">
+                                        <span class="icon is-small">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                            <span>Сезон 2024</span>
+                                        </a>
+                                        <a href="#" class="dropdown-item">
+                                            <span>Сезон 2023</span>
+                                        </a>
+                                        <a href="#" class="dropdown-item">
+                                            <span>Сезон 2022</span>
+                                        </a>
+                                        <hr class="dropdown-divider">
+                                        <a href="#" class="dropdown-item add-season-item"
+                                           data-target="add-season-modal">
+                                        <span class="icon is-small">
+                                            <i class="fas fa-plus"></i>
+                                        </span>
+                                            <span>Создать новый сезон</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control">
+                            <input class="input is-small" type="text" placeholder="Поиск полей...">
+                        </div>
+                        <div class="control">
+                            <button class="button is-small is-white profile-button">
+                            <span class="icon">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="main-container">
+        <div class="sidebar-container columns is-gapless" id="sidebarContainer">
+            <div class="column is-narrow sidebar-column">
+                <aside class="menu sidebar-menu">
+                    <div class="menu-header">
+                        <h3 class="menu-label">Навигация</h3>
+                    </div>
+                    <ul class="menu-list">
+                        <li>
+                            <a href="/dashboard.html" class="is-flex is-align-items-center">
+                            <span class="icon is-small mr-3">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </span>
+                                <span>Панель управления</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="is-active is-flex is-align-items-center">
+                            <span class="icon is-small mr-3">
+                                <i class="fas fa-tractor"></i>
+                            </span>
+                                <span>Поля</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="is-flex is-align-items-center">
+                            <span class="icon is-small mr-3">
+                                <i class="fas fa-seedling"></i>
+                            </span>
+                                <span>Севооборот</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="is-flex is-align-items-center">
+                            <span class="icon is-small mr-3">
+                                <i class="fas fa-cogs"></i>
+                            </span>
+                                <span>Настройки</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="is-flex is-align-items-center logout-item">
+                            <span class="icon is-small mr-3">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </span>
+                                <span>Выход</span>
+                            </a>
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+
+            <div class="column fields-column">
+                <aside class="fields-panel">
+                    <div class="panel is-shadowless">
+                        <div class="panel-heading is-flex is-justify-content-space-between is-align-items-center py-3">
+                            <h3 class="is-size-6 has-text-weight-semibold">Фермерские поля</h3>
+                            <button class="button is-small is-success add-field-btn">
+                            <span class="icon is-small">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                                <span>Добавить</span>
+                            </button>
+                        </div>
+
+                        <div class="panel-block">
+                            <p class="control has-icons-left">
+                                <input class="input is-small" type="text" placeholder="Поиск полей...">
+                                <span class="icon is-small is-left">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            </p>
+                        </div>
+
+                        <div class="fields-list">
+                            <a class="panel-block is-active field-item">
+                                <div class="is-flex is-justify-content-space-between is-flex-grow-1 is-align-items-center">
+                                    <div>
+                                        <span class="field-name has-text-weight-semibold">Поле №1</span>
+                                        <br>
+                                        <small class="field-crop">
+                                        <span class="icon is-small mr-1">
+                                            <i class="fas fa-wheat"></i>
+                                        </span>
+                                            Пшеница озимая
+                                        </small>
+                                    </div>
+                                    <span class="tag is-light is-success field-size">45.2 га</span>
+                                </div>
+                            </a>
+                            <a class="panel-block field-item">
+                                <div class="is-flex is-justify-content-space-between is-flex-grow-1 is-align-items-center">
+                                    <div>
+                                        <span class="field-name has-text-weight-semibold">Поле №2</span>
+                                        <br>
+                                        <small class="field-crop">
+                                        <span class="icon is-small mr-1">
+                                            <i class="fas fa-corn"></i>
+                                        </span>
+                                            Кукуруза
+                                        </small>
+                                    </div>
+                                    <span class="tag is-light is-success field-size">32.7 га</span>
+                                </div>
+                            </a>
+                            <a class="panel-block field-item">
+                                <div class="is-flex is-justify-content-space-between is-flex-grow-1 is-align-items-center">
+                                    <div>
+                                        <span class="field-name has-text-weight-semibold">Поле №3</span>
+                                        <br>
+                                        <small class="field-crop">
+                                            Подсолнечник
+                                        </small>
+                                    </div>
+                                    <span class="tag is-light is-success field-size">28.5 га</span>
+                                </div>
+                            </a>
+                            <a class="panel-block field-item">
+                                <div class="is-flex is-justify-content-space-between is-flex-grow-1 is-align-items-center">
+                                    <div>
+                                        <span class="field-name has-text-weight-semibold">Поле "Северное"</span>
+                                        <br>
+                                        <small class="field-crop">
+                                            Ячмень
+                                        </small>
+                                    </div>
+                                    <span class="tag is-light is-success field-size">56.3 га</span>
+                                </div>
+                            </a>
+                            <a class="panel-block field-item">
+                                <div class="is-flex is-justify-content-space-between is-flex-grow-1 is-align-items-center">
+                                    <div>
+                                        <span class="field-name has-text-weight-semibold">Поле "Южное"</span>
+                                        <br>
+                                        <small class="field-crop">
+                                            Рапс
+                                        </small>
+                                    </div>
+                                    <span class="tag is-light is-success field-size">41.8 га</span>
+                                </div>
+                            </a>
+                            <a class="panel-block field-item">
+                                <div class="is-flex is-justify-content-space-between is-flex-grow-1 is-align-items-center">
+                                    <div>
+                                        <span class="field-name has-text-weight-semibold">Поле "Западное"</span>
+                                        <br>
+                                        <small class="field-crop">
+                                            Сояс
+                                        </small>
+                                    </div>
+                                    <span class="tag is-light is-success field-size">37.4 га</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <div class="map-container" id="mapContainer">
+            <div class="main_map" id="map"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="add-season-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Создание нового сезона</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="add-season-form">
+                    <div class="field">
+                        <label class="label">Название сезона</label>
+                        <div class="control">
+                            <input class="input" type="text" placeholder="Например: Сезон 2025" name="seasonName"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Дата начала</label>
+                        <div class="control">
+                            <input class="input" type="date" name="startDate" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Дата окончания</label>
+                        <div class="control">
+                            <input class="input" type="date" name="endDate" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Описание (необязательно)</label>
+                        <div class="control">
+                            <textarea class="textarea" placeholder="Дополнительная информация о сезоне..."
+                                      name="description" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success create-season-btn" type="submit" form="add-season-form">
+                    Создать сезон
+                </button>
+                <button class="button cancel-season-btn">Отмена</button>
+            </footer>
+        </div>
+    </div>
+</main>
+
+<script src="../assets/js/OpenLayers.js"></script>
+<script src="fields.js"></script>
+</body>
+</html>
