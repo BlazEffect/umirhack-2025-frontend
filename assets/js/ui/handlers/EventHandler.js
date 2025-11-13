@@ -1,6 +1,5 @@
 import { EventManager } from '../../core/EventManager.js';
 import { LocationButton } from '../components/LocationButton.js';
-import { MobileMenu } from '../components/MobileMenu.js';
 import { FieldManager } from '../components/FieldManager.js';
 
 export class EventHandler {
@@ -17,20 +16,11 @@ export class EventHandler {
         LocationButton.hideLoading();
       }
     });
-
-    EventManager.on('map:areaCalculated', (area) => {
-      this.displayAreaOnMap(area);
-    });
   }
 
   static setupSeasonEventHandlers() {
     EventManager.on('fields:cropsUpdate', (cropsData) => {
       FieldManager.updateFieldsCrops(cropsData);
     });
-  }
-
-  static displayAreaOnMap(area) {
-    const LandAreaNumberElement = document.querySelector('.fields-panel .field-form .field-size');
-    LandAreaNumberElement.innerHTML = `${area.toFixed(2)} га`;
   }
 }

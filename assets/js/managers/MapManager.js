@@ -1,5 +1,6 @@
 import { Config } from '../core/Config.js';
 import { EventManager } from '../core/EventManager.js';
+import {FieldManager} from "../ui/components/FieldManager.js";
 
 export const MapManager = {
   map: null,
@@ -132,7 +133,8 @@ export const MapManager = {
 
     this.draw.on('drawstart', (event) => {
       this.currentFeature = event.feature;
-      EventManager.emit('map:drawingStarted');
+
+      EventManager.emit('fields:newFieldForm', this.currentFeature);
 
       this.currentFeature.setStyle(new ol.style.Style({
         fill: new ol.style.Fill({
@@ -156,7 +158,11 @@ export const MapManager = {
         this.geometryChangeListener = null;
       }
 
-      this.currentFeature = null;
+      // Удаляем форму, если рисование отменено
+      if (this.currentFeature) {
+        EventManager.emit('field:removeFieldForm', this.currentFeature);
+        this.currentFeature = null;
+      }
     });
 
     this.draw.on('drawend', (event) => {
@@ -177,20 +183,22 @@ export const MapManager = {
 
         setTimeout(() => {
           this.source.removeFeature(feature);
+          EventManager.emit('field:removeFieldForm', feature);
         }, 10);
         return;
       }
 
       const area = this.calculateArea(geometry);
-      this.displayArea(area);
+      this.displayArea(area, feature);
 
       geometry.on('change', () => {
         const updatedArea = this.calculateArea(geometry);
-        this.displayArea(updatedArea);
+        this.displayArea(updatedArea, feature);
       });
 
-      this.currentFeature = null;
       EventManager.emit('map:drawingCompleted', { feature, area });
+
+      this.currentFeature = null;
     });
 
     this.map.addInteraction(this.draw);
@@ -212,7 +220,6 @@ export const MapManager = {
 
     this.currentFeature = null;
     this.source.clear();
-    this.displayArea(0);
   },
 
   checkSelfIntersection: function() {
@@ -280,21 +287,6 @@ export const MapManager = {
   },
 
   setupEventListeners: function() {
-    this.source.on('addfeature', function(event) {
-      const feature = event.feature;
-      const geometry = feature.getGeometry();
-
-      if (geometry.getType() === 'Polygon') {
-        const area = MapManager.calculateArea(geometry);
-        MapManager.displayArea(area);
-
-        geometry.on('change', function() {
-          const updatedArea = MapManager.calculateArea(geometry);
-          MapManager.displayArea(updatedArea);
-        });
-      }
-    });
-
     EventManager.on('map:locateUser', () => {
       this.locateUser();
     });
@@ -306,14 +298,26 @@ export const MapManager = {
     EventManager.on('map:disableDrawing', () => {
       this.disableDrawingMode();
     });
+
+    EventManager.on('map:calculateArea', (polygon) => {
+      this.calculateArea(polygon);
+    });
   },
 
   calculateArea: function(polygon) {
     return ol.sphere.getArea(polygon) / 10000;
   },
 
-  displayArea: function(area) {
-    EventManager.emit('map:areaCalculated', area);
+  displayArea: function(area, feature = null) {
+    if (feature) {
+      const fieldIndex = FieldManager.fieldForms.get(feature);
+      if (fieldIndex !== undefined) {
+        const areaElement = document.querySelector(`[data-field-index="${fieldIndex}"] .field-size`);
+        if (areaElement) {
+          areaElement.textContent = `${area.toFixed(2)} га`;
+        }
+      }
+    }
   },
 
   locateUser: function() {

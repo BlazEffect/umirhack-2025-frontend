@@ -2,6 +2,9 @@ import {EventManager} from '../../core/EventManager.js';
 import {Config} from '../../core/Config.js';
 
 export class FieldManager {
+  static fieldForms = new Map();
+  static nextFieldIndex = 1;
+
   static async init() {
     let fieldsData = await this.loadFieldsFromAPI();
 
@@ -11,11 +14,21 @@ export class FieldManager {
 
     this.setupFieldSelection();
     this.setupEventListeners();
+
+    this.setupFormHandlers();
   }
 
   static setupEventListeners() {
     EventManager.on('fields:cropsUpdate', (cropsData) => {
       this.updateFieldsCrops(cropsData);
+    });
+
+    EventManager.on('fields:newFieldForm', (feature) => {
+      this.createNewFieldForm(feature);
+    });
+
+    EventManager.on('fields:removeFieldForm', (feature) => {
+      this.removeFieldForm(feature);
     });
   }
 
@@ -61,6 +74,71 @@ export class FieldManager {
     return fieldElement;
   }
 
+  static removeFieldForm(feature) {
+    const fieldIndex = this.fieldForms.get(feature);
+    if (fieldIndex !== undefined) {
+      const formElement = document.querySelector(`[data-field-index="${fieldIndex}"]`);
+      if (formElement) {
+        formElement.remove();
+      }
+      this.fieldForms.delete(feature);
+    }
+  };
+
+  static setupFormHandlers(specificIndex = null) {
+    const selectors = specificIndex
+      ? [`[data-field-index="${specificIndex}"]`]
+      : ['[data-field-index]'];
+
+    selectors.forEach(selector => {
+      const formElements = document.querySelectorAll(selector);
+
+      formElements.forEach(formElement => {
+        const form = formElement.querySelector('.add-field-form');
+        const fieldIndex = formElement.getAttribute('data-field-index');
+
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleFormSubmit(form, fieldIndex);
+        });
+      });
+    });
+  };
+
+  static handleFormSubmit(form, fieldIndex) {
+    const formData = new FormData(form);
+    const fieldName = formData.get('fieldName');
+    const description = formData.get('description');
+
+    let correspondingFeature = null;
+    for (let [feature, index] of this.fieldForms) {
+      if (index == fieldIndex) {
+        correspondingFeature = feature;
+        break;
+      }
+    }
+
+    if (correspondingFeature) {
+      correspondingFeature.set('fieldName', fieldName);
+      correspondingFeature.set('description', description);
+      correspondingFeature.set('submitted', true);
+
+      EventManager.emit('field:added', {
+        feature: correspondingFeature,
+        fieldName,
+        description,
+        area: EventManager.emit('map:calculateArea', correspondingFeature.getGeometry()),
+      });
+
+      EventManager.emit('notification:show', {
+        message: `Поле "${fieldName}" успешно добавлено!`,
+        type: 'success'
+      });
+
+      form.closest('.field-form').classList.add('is-submitted');
+    }
+  };
+
   static getCropIcon(cropName) {
     const cropIcons = {
       'Пшеница озимая': 'fas fa-wheat',
@@ -90,13 +168,54 @@ export class FieldManager {
     return 'fas fa-seedling';
   }
 
+  static createNewFieldForm(feature) {
+    const fieldIndex = this.nextFieldIndex++;
+
+    const formsContainer = document.querySelector('.field-forms-container');
+
+    const newFormHTML = `
+      <div class="panel-block field-form" data-field-index="${fieldIndex}">
+        <div class="field">
+          Площадь:
+          <span class="field-size">0 га</span>
+        </div>
+
+        <form class="add-field-form">
+          <div class="field">
+            <label class="label">Название поля</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Название поля" name="fieldName" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">Описание (необязательно)</label>
+            <div class="control">
+              <textarea class="textarea" placeholder="Дополнительная информация о поле..."
+                        name="description" rows="2"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+    `;
+
+    formsContainer.insertAdjacentHTML('beforeend', newFormHTML);
+
+    if (feature) {
+      this.fieldForms.set(feature, fieldIndex);
+      feature.set('fieldIndex', fieldIndex);
+    }
+
+    this.setupFormHandlers(fieldIndex);
+  };
+
   static setupFieldSelection() {
     const fieldItems = document.querySelectorAll('.field-item');
     const addFieldBtn = document.querySelector('.add-field-btn');
     const backBtn = document.querySelector('.back-btn');
 
     const fieldsListPanel = document.querySelector('.fields-panel');
-    const addFieldPanel = document.querySelector('.field-form').closest('.fields-panel');
+    const addFieldPanel = document.querySelector('.field-forms-container').closest('.fields-panel');
 
     fieldItems.forEach(item => {
       item.addEventListener('click', function (e) {
@@ -124,6 +243,11 @@ export class FieldManager {
       backBtn.addEventListener('click', function() {
         addFieldPanel.classList.add('is-hidden');
         fieldsListPanel.classList.remove('is-hidden');
+
+        FieldManager.fieldForms = new Map();
+        FieldManager.nextFieldIndex = 1;
+        const formsContainer = document.querySelector('.field-forms-container');
+        formsContainer.innerHTML = '';
 
         EventManager.emit('map:disableDrawing');
       });
