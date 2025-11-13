@@ -1,11 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const navbarBurger = document.querySelector('.navbar-burger');
+import {MobileMenu} from "./ui/components/MobileMenu.js";
 
-  navbarBurger.addEventListener('click', () => {
-    const target = navbarBurger.dataset.target;
-    const $target = document.getElementById(target);
+(function() {
+  'use strict';
 
-    navbarBurger.classList.toggle('is-active');
-    $target.classList.toggle('is-active');
+  document.addEventListener('DOMContentLoaded', function() {
+    MobileMenu.init();
   });
-});
+})();
