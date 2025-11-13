@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="register.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/index.html">
+                    <div class="is-flex is-align-items-center">
+                        <img src="../../assets/images/logo.png" alt="логотип" class="header_logo mr-2">
+                        <p class="header_text has-text-weight-bold">AgriManage</p>
+                    </div>
+                </a>
+
+                <div class="navbar-burger" data-target="navbarMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a href="../login/login.html" class="button custom-login-button">Войти</a>
+                            <a href="register.html" class="button custom-register-button">Регистрация</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="main_container">
+        <div class="register-form">
+            <div class="register-form-header">
+                <div class="register-form-header_logo">
+                    <div class="is-flex is-justify-content-center is-align-items-center">
+                        <figure class="image is-48x48 mr-3">
+                            <img src="../../assets/images/logo.png" alt="логотип" class="register-form-header_logo-image">
+                        </figure>
+                        <p class="register-form-header_logo-text has-text-weight-bold">AgriManage</p>
+                    </div>
+                </div>
+
+                <div class="register-form-header_title">
+                    <h1 class="register-form-header_title-text has-text-weight-bold">Создать аккаунт</h1>
+                    <p class="register-form-header_title-description">Введите свою информацию, чтобы создать аккаунт.</p>
+                </div>
+            </div>
+
+            <form class="register-form_form">
+                <div class="columns is-mobile">
+                    <div class="column">
+                        <div class="form-field">
+                            <label for="name" class="label">Имя</label>
+                            <div class="control">
+                                <input id="name" class="input" type="text" name="name" placeholder="Иван">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="form-field">
+                            <label for="surname" class="label">Фамилия</label>
+                            <div class="control">
+                                <input id="surname" class="input" type="text" name="surname" placeholder="Иванов">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="email" class="label">Электронная почта</label>
+                    <div class="control">
+                        <input id="email" class="input" type="email" name="email" placeholder="email@mail.ru">
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="password" class="label">Пароль</label>
+                    <div class="control">
+                        <input id="password" class="input" type="password" name="password" placeholder="qwerty12345">
+                    </div>
+                </div>
+
+                <button type="submit" class="button is-success is-fullwidth">Создать аккаунт</button>
+
+                <p class="form-button_login-button">
+                    Уже есть аккаунт?
+                    <a href="../login/login.html" class="form-button_login-link">Вход</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="content is-flex is-justify-content-space-between is-align-items-center">
+            <div class="is-flex is-align-items-center">
+                <img src="../../assets/images/logo.png" alt="логотип" class="footer_logo mr-2">
+                <p class="footer_text has-text-weight-bold">AgriManage</p>
+            </div>
+            <div class="is-flex is-align-items-center gap-4">
+                <a href="#" class="has-text-grey">О нас</a>
+                <a href="#" class="has-text-grey">Функции</a>
+                <a href="#" class="has-text-grey">Политика конфиденциальности</a>
+                <a href="#" class="has-text-grey">Условия обслуживания</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="register.js"></script>
+</body>
+</html>
