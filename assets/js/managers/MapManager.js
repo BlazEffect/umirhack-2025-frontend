@@ -9,6 +9,7 @@ export const MapManager = {
   modify: null,
 
   isDrawingMode: false,
+  currentFeature: null,
 
   init: function() {
     this.createMap();
@@ -94,23 +95,103 @@ export const MapManager = {
       type: 'Polygon',
     });
 
-    this.draw.on('drawstart', function() {
+    const originalAddToDrawing = this.draw.addToDrawing_.bind(this.draw);
+
+    this.draw.addToDrawing_ = (event) => {
+      if (!this.currentFeature) {
+        originalAddToDrawing(event);
+        return;
+      }
+
+      const geometry = this.currentFeature.getGeometry();
+      if (!geometry) {
+        originalAddToDrawing(event);
+        return;
+      }
+
+      const coordinates = geometry.getCoordinates();
+      if (!coordinates || !coordinates[0]) {
+        originalAddToDrawing(event);
+        return;
+      }
+
+      const newCoordinates = coordinates[0].slice();
+      const insertIndex = newCoordinates.length - 1;
+      newCoordinates.splice(insertIndex, 0, event.coordinate);
+
+      if (this.hasSelfIntersection(coordinates[0])) {
+        EventManager.emit('notification:show', {
+          message: 'Невозможно добавить точку: создается самопересечение!',
+          type: 'warning'
+        });
+        return;
+      }
+
+      originalAddToDrawing(event);
+    };
+
+    this.draw.on('drawstart', (event) => {
+      this.currentFeature = event.feature;
       EventManager.emit('map:drawingStarted');
+
+      this.currentFeature.setStyle(new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ffcc33',
+          width: 2
+        })
+      }));
+
+      const geometry = this.currentFeature.getGeometry();
+      this.geometryChangeListener = geometry.on('change', () => {
+        this.checkSelfIntersection();
+      });
     });
 
-    this.draw.on('drawend', function(event) {
+    this.draw.on('drawabort', () => {
+      if (this.geometryChangeListener) {
+        ol.Observable.unByKey(this.geometryChangeListener);
+        this.geometryChangeListener = null;
+      }
+
+      this.currentFeature = null;
+    });
+
+    this.draw.on('drawend', (event) => {
+      if (this.geometryChangeListener) {
+        ol.Observable.unByKey(this.geometryChangeListener);
+        this.geometryChangeListener = null;
+      }
+
       const feature = event.feature;
       const geometry = feature.getGeometry();
+      const coordinates = geometry.getCoordinates();
+
+      if (this.hasSelfIntersection(coordinates[0])) {
+        EventManager.emit('notification:show', {
+          message: 'Полигон имеет самопересекающиеся линии! Пожалуйста, нарисуйте заново.',
+          type: 'error'
+        });
+
+        setTimeout(() => {
+          this.source.removeFeature(feature);
+        }, 10);
+        return;
+      }
+
       const area = this.calculateArea(geometry);
       this.displayArea(area);
 
-      feature.getGeometry().on('change', function() {
-        const updatedArea = MapManager.calculateArea(feature.getGeometry());
-        MapManager.displayArea(updatedArea);
+      geometry.on('change', () => {
+        const updatedArea = this.calculateArea(geometry);
+        this.displayArea(updatedArea);
       });
 
+      this.currentFeature = null;
       EventManager.emit('map:drawingCompleted', { feature, area });
-    }.bind(this));
+    });
 
     this.map.addInteraction(this.draw);
 
@@ -129,8 +210,73 @@ export const MapManager = {
       this.snap = null;
     }
 
+    this.currentFeature = null;
     this.source.clear();
-    MapManager.displayArea(0);
+    this.displayArea(0);
+  },
+
+  checkSelfIntersection: function() {
+    if (!this.currentFeature) return;
+
+    const geometry = this.currentFeature.getGeometry();
+    if (!geometry) return;
+
+    const coordinates = geometry.getCoordinates();
+    if (!coordinates || !coordinates[0]) return;
+
+    if (this.hasSelfIntersection(coordinates[0])) {
+      this.currentFeature.setStyle(new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 0, 0, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ff0000',
+          width: 2
+        })
+      }));
+    } else {
+      this.currentFeature.setStyle(new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ffcc33',
+          width: 2
+        })
+      }));
+    }
+  },
+
+  hasSelfIntersection: function(ring) {
+    const points = ring;
+    const n = points.length - 1;
+
+    if (n < 3) return false;
+
+    for (let i = 0; i < n - 1; i++) {
+      const a1 = points[i];
+      const a2 = points[i + 1];
+
+      for (let j = i + 2; j < n; j++) {
+        if (j === i + 1 || (i === 0 && j === n - 1)) continue;
+
+        const b1 = points[j];
+        const b2 = points[j + 1];
+
+        if (this.segmentsIntersect(a1, a2, b1, b2)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  },
+
+  segmentsIntersect: function(a, b, c, d) {
+    const ccw = (a, b, c) => {
+      return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0]);
+    };
+
+    return ccw(a, c, d) !== ccw(b, c, d) && ccw(a, b, c) !== ccw(a, b, d);
   },
 
   setupEventListeners: function() {
@@ -139,15 +285,15 @@ export const MapManager = {
       const geometry = feature.getGeometry();
 
       if (geometry.getType() === 'Polygon') {
-        const area = this.calculateArea(geometry);
-        this.displayArea(area);
+        const area = MapManager.calculateArea(geometry);
+        MapManager.displayArea(area);
 
         geometry.on('change', function() {
           const updatedArea = MapManager.calculateArea(geometry);
           MapManager.displayArea(updatedArea);
         });
       }
-    }.bind(this));
+    });
 
     EventManager.on('map:locateUser', () => {
       this.locateUser();
