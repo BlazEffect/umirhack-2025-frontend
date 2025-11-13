@@ -6,20 +6,13 @@ export const MapManager = {
   source: null,
   draw: null,
   snap: null,
+  modify: null,
 
-  config: {
-    canDrawField: true
-  },
+  isDrawingMode: false,
 
-  init: function(userConfig = {}) {
-    this.config = { ...this.config, ...userConfig };
-
+  init: function() {
     this.createMap();
-
-    if (this.config.canDrawField) {
-      this.addInteractions();
-      this.setupEventListeners();
-    }
+    this.setupEventListeners();
   },
 
   createMap: function() {
@@ -64,16 +57,45 @@ export const MapManager = {
       }),
     });
 
-    if (this.config.canDrawField) {
-      const modify = new ol.interaction.Modify({source: this.source});
-      this.map.addInteraction(modify);
+    if (this.isDrawingMode) {
+      this.modify = new ol.interaction.Modify({source: this.source});
+      this.map.addInteraction(this.modify);
     }
   },
 
-  addInteractions: function() {
+  enableDrawingMode: function() {
+    if (this.isDrawingMode) return;
+
+    this.isDrawingMode = true;
+    this.addDrawingInteractions();
+
+    if (!this.modify) {
+      this.modify = new ol.interaction.Modify({source: this.source});
+      this.map.addInteraction(this.modify);
+    }
+  },
+
+  disableDrawingMode: function() {
+    if (!this.isDrawingMode) return;
+
+    this.isDrawingMode = false;
+    this.removeDrawingInteractions();
+
+    if (this.draw) {
+      this.draw.abortDrawing();
+    }
+  },
+
+  addDrawingInteractions: function() {
+    this.removeDrawingInteractions();
+
     this.draw = new ol.interaction.Draw({
       source: this.source,
       type: 'Polygon',
+    });
+
+    this.draw.on('drawstart', function() {
+      EventManager.emit('map:drawingStarted');
     });
 
     this.draw.on('drawend', function(event) {
@@ -86,11 +108,29 @@ export const MapManager = {
         const updatedArea = MapManager.calculateArea(feature.getGeometry());
         MapManager.displayArea(updatedArea);
       });
+
+      EventManager.emit('map:drawingCompleted', { feature, area });
     }.bind(this));
 
     this.map.addInteraction(this.draw);
+
     this.snap = new ol.interaction.Snap({ source: this.source });
     this.map.addInteraction(this.snap);
+  },
+
+  removeDrawingInteractions: function() {
+    if (this.draw) {
+      this.map.removeInteraction(this.draw);
+      this.draw = null;
+    }
+
+    if (this.snap) {
+      this.map.removeInteraction(this.snap);
+      this.snap = null;
+    }
+
+    this.source.clear();
+    MapManager.displayArea(0);
   },
 
   setupEventListeners: function() {
@@ -111,6 +151,14 @@ export const MapManager = {
 
     EventManager.on('map:locateUser', () => {
       this.locateUser();
+    });
+
+    EventManager.on('map:enableDrawing', () => {
+      this.enableDrawingMode();
+    });
+
+    EventManager.on('map:disableDrawing', () => {
+      this.disableDrawingMode();
     });
   },
 

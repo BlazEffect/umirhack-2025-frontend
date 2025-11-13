@@ -11,9 +11,7 @@ import {Notification} from "../assets/js/ui/components/Notification.js";
   'use strict';
 
   document.addEventListener('DOMContentLoaded', function() {
-    MapManager.init({
-      canDrawField: false
-    });
+    MapManager.init();
 
     LocationButton.init();
     MobileMenu.init();
