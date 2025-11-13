@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('userData', JSON.stringify(data.user));
 
       setTimeout(() => {
-        window.location.href = '/loading.html';
+        window.location.href = '/loading/loading.html';
       }, 1500);
 
     } catch (error) {
