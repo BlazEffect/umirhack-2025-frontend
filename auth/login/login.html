@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="login.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/index.html">
+                    <div class="is-flex is-align-items-center">
+                        <img src="../../assets/images/logo.png" alt="логотип" class="header_logo mr-2">
+                        <p class="header_text has-text-weight-bold">AgriManage</p>
+                    </div>
+                </a>
+
+                <div class="navbar-burger" data-target="navbarMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a href="login.html" class="button custom-login-button">Войти</a>
+                            <a href="../register/register.html" class="button custom-register-button">Регистрация</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="login-card">
+        <div class="login-form-header">
+            <div class="login-form-header_logo has-text-centered">
+                <div class="is-flex is-justify-content-center is-align-items-center">
+                    <img src="../../assets/images/logo.png" alt="логотип" class="login-form-header_logo-image">
+                    <p class="login-form-header_logo-text ml-2">AgriManage</p>
+                </div>
+            </div>
+
+            <div class="login-form-header_title has-text-centered">
+                <p class="login-form-header_title-text">Войти</p>
+                <p class="login-form-header_title-description">Введите свои данные для доступа к учетной записи.</p>
+            </div>
+        </div>
+
+        <form class="login-form_form">
+            <div class="form-field">
+                <label for="email" class="form-label">Электронная почта</label>
+                <input id="email" class="form-input" type="email" name="email" placeholder="email@mail.ru">
+            </div>
+
+            <div class="form-field">
+                <label for="password" class="form-label">Пароль</label>
+                <input id="password" class="form-input" type="password" name="password" placeholder="qwerty12345">
+            </div>
+
+            <button type="submit" class="button is-success submit-button">Войти</button>
+
+            <p class="form-login-button">
+                Нет учётной записи?
+                <a href="../register/register.html" class="form-login-link">Создать учетную запись</a>
+            </p>
+        </form>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="content is-flex is-justify-content-space-between is-align-items-center">
+            <div class="is-flex is-align-items-center">
+                <img src="../../assets/images/logo.png" alt="логотип" class="footer_logo mr-2">
+                <p class="footer_text has-text-weight-bold">AgriManage</p>
+            </div>
+            <div class="is-flex is-align-items-center gap-4">
+                <a href="#" class="has-text-grey">О нас</a>
+                <a href="#" class="has-text-grey">Функции</a>
+                <a href="#" class="has-text-grey">Политика конфиденциальности</a>
+                <a href="#" class="has-text-grey">Условия обслуживания</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="login.js"></script>
+</body>
+</html>
