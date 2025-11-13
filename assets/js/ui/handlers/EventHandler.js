@@ -30,16 +30,7 @@ export class EventHandler {
   }
 
   static displayAreaOnMap(area) {
-    const existingAreaElement = document.getElementById('area-display');
-    if (existingAreaElement) {
-      existingAreaElement.remove();
-    }
-
-    const areaElement = document.createElement('div');
-    areaElement.id = 'area-display';
-    areaElement.className = 'area-display';
-    areaElement.innerHTML = `<strong>Площадь территории:</strong> ${area.toFixed(2)} га`;
-
-    document.getElementById('map').appendChild(areaElement);
+    const LandAreaNumberElement = document.querySelector('.fields-panel .field-form .field-size');
+    LandAreaNumberElement.innerHTML = `${area.toFixed(2)} га`;
   }
 }
