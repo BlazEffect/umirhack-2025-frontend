@@ -1,9 +1,9 @@
 :root {
     --primary-color: #22C358;
     --primary-hover: #1daa4d;
-    --sidebar-width: 221px;
+    --sidebar-width: 600px;
     --navbar-height: 3.25rem;
-    --nav-menu-width: 220px;
+    --nav-menu-width: 300px;
     --fields-panel-width: 280px;
     font-family: 'Open Sans', sans-serif
 }

@@ -1,11 +1,11 @@
 :root {
-    --primary-color: #22c358;
+    --primary-color: #22C358;
     --primary-hover: #1daa4d;
-    --sidebar-width: 500px;
+    --sidebar-width: 600px;
     --navbar-height: 3.25rem;
-    --nav-menu-width: 220px;
+    --nav-menu-width: 300px;
     --fields-panel-width: 280px;
-    font-family: 'open sans', sans-serif
+    font-family: 'Open Sans', sans-serif
 }
 
 body {
@@ -166,7 +166,8 @@ body {
 .add-field-btn {
     font-size: .875rem;
     font-weight: 500;
-    background-color: var(--primary-color)
+    background-color: var(--primary-color);
+    color: #fff
 }
 
 .panel-block .control.has-icons-left .icon {
@@ -198,7 +199,7 @@ body {
 .field-item:hover {
     background-color: #f8f9fa;
     border-color: #e9ecef;
-    transform: translatey(-1px);
+    transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, .05)
 }
 
@@ -498,7 +499,7 @@ body {
     background-color: rgba(255, 255, 255, 0.8);
     padding: 10px;
     border-radius: 5px;
-    font-family: arial, sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 14px;
     z-index: 1000;
 }
@@ -550,13 +551,13 @@ body {
 
 @media screen and (max-width: 1023px) {
     .sidebar-container {
-        transform: translatex(-100%);
+        transform: translateX(-100%);
         transition: transform .3s ease;
         box-shadow: 2px 0 10px rgba(0, 0, 0, .1)
     }
 
     .sidebar-container.is-active {
-        transform: translatex(0)
+        transform: translateX(0)
     }
 
     .map-container {
@@ -565,7 +566,7 @@ body {
     }
 
     .navbar-menu.is-active ~ .main-container .map-container {
-        transform: translatex(var(--sidebar-width));
+        transform: translateX(var(--sidebar-width));
         width: calc(100% - var(--sidebar-width))
     }
 
