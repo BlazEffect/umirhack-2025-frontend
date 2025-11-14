@@ -16,6 +16,8 @@ export class FieldManager {
     this.setupEventListeners();
 
     this.setupFormHandlers();
+
+    EventManager.emit('map:renderFields', fieldsData);
   }
 
   static setupEventListeners() {
@@ -29,6 +31,10 @@ export class FieldManager {
 
     EventManager.on('fields:removeFieldForm', (feature) => {
       this.removeFieldForm(feature);
+    });
+
+    EventManager.on('field:select', (fieldId) => {
+      this.selectField(fieldId);
     });
   }
 
@@ -277,13 +283,26 @@ export class FieldManager {
           "id": 1,
           "name": "Поле №1",
           "area": 45.2,
-          "crop": "Пшеница озимая"
+          "crop": "Пшеница озимая",
+          "coordinates": [
+            [4151670.0856221057, 7513470.317794253],
+            [4147492.222254961, 7494824.604505069],
+            [4163490.423390341, 7499205.840791718],
+            [4151670.0856221057, 7513470.317794253]
+          ]
         },
         {
           "id": 2,
           "name": "Поле №2",
           "area": 32.7,
-          "crop": "Кукуруза"
+          "crop": "Кукуруза",
+          "coordinates": [
+            [4200785.607414969, 7543425.726029336],
+            [4184889.2994700456, 7495639.714544913],
+            [4216783.808550349,7496047.274228949],
+            [4233291.512954693,7513164.650363283],
+            [4200785.607414969, 7543425.726029336]
+          ]
         },
         {
           "id": 3,
@@ -335,5 +354,13 @@ export class FieldManager {
         `;
       }
     });
+  }
+
+  static selectField(fieldId) {
+    const fieldItem = document.querySelector('.field-item[data-field-id="' + fieldId + '"]');
+
+    if (fieldItem) {
+      fieldItem.click();
+    }
   }
 }

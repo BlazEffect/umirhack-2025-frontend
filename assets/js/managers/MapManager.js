@@ -63,6 +63,37 @@ export const MapManager = {
       this.modify = new ol.interaction.Modify({source: this.source});
       this.map.addInteraction(this.modify);
     }
+
+    this.map.on('click', (evt) => {
+      const feature = this.map.forEachFeatureAtPixel(evt.pixel, (feature) => {
+        return feature;
+      });
+
+      if (feature && feature.get('type') === 'field') {
+        this.showFieldInfo(feature);
+      }
+    });
+
+    this.map.on('pointermove', (evt) => {
+      const hit = this.map.hasFeatureAtPixel(evt.pixel);
+      this.map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+    });
+  },
+
+  showFieldInfo: function(feature) {
+    const fieldInfo = {
+      name: feature.get('name'),
+      area: feature.get('area'),
+      crop: feature.get('crop'),
+      id: feature.get('id')
+    };
+
+    EventManager.emit('notification:show', {
+      message: `Поле: ${fieldInfo.name}<br>Площадь: ${fieldInfo.area} га<br>Культура: ${fieldInfo.crop}`,
+      type: 'info',
+      duration: 5000
+    });
+    EventManager.emit('field:select', fieldInfo.id);
   },
 
   enableDrawingMode: function() {
@@ -302,6 +333,10 @@ export const MapManager = {
     EventManager.on('map:calculateArea', (polygon) => {
       this.calculateArea(polygon);
     });
+
+    EventManager.on('map:renderFields', (data) => {
+      this.displayFieldsFromData(data);
+    });
   },
 
   calculateArea: function(polygon) {
@@ -430,5 +465,67 @@ export const MapManager = {
     }));
 
     this.source.addFeature(locationMarker);
-  }
+  },
+
+  displayFieldsFromData: function(fieldsData) {
+    const features = this.source.getFeatures();
+    features.forEach(feature => {
+      if (feature.get('type') === 'field') {
+        this.source.removeFeature(feature);
+      }
+    });
+
+    fieldsData.forEach(field => {
+      if (field.coordinates && field.coordinates.length >= 3) {
+        const polygon = new ol.geom.Polygon([field.coordinates]);
+        const feature = new ol.Feature({
+          geometry: polygon,
+          name: field.name,
+          area: field.area,
+          crop: field.crop,
+          id: field.id,
+          type: 'field'
+        });
+
+        feature.setStyle(this.getFieldStyle(field));
+
+        this.source.addFeature(feature);
+      }
+    });
+  },
+
+  getFieldStyle: function(field) {
+    const colors = [
+      'rgba(76, 175, 80, 0.3)',
+      'rgba(33, 150, 243, 0.3)',
+      'rgba(255, 193, 7, 0.3)',
+      'rgba(156, 39, 176, 0.3)',
+      'rgba(244, 67, 54, 0.3)',
+      'rgba(0, 150, 136, 0.3)'
+    ];
+
+    const color = colors[field.id % colors.length];
+
+    return new ol.style.Style({
+      fill: new ol.style.Fill({
+        color: color
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#fff',
+        width: 2
+      }),
+      text: new ol.style.Text({
+        text: field.name,
+        font: '14px "Open Sans"',
+        fill: new ol.style.Fill({
+          color: '#fff'
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#000',
+          width: 2
+        }),
+        offsetY: -15
+      })
+    });
+  },
 };
