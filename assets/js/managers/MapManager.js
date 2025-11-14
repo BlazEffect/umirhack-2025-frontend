@@ -12,6 +12,8 @@ export const MapManager = {
   isDrawingMode: false,
   currentFeature: null,
 
+  areaCache: new Map(),
+
   init: function() {
     this.createMap();
     this.setupEventListeners();
@@ -21,42 +23,65 @@ export const MapManager = {
     const satelliteLayer = new ol.layer.Tile({
       source: new ol.source.XYZ({
         url: Config.map.satelliteUrl,
-        attributions: '© Яндекс'
-      })
+        attributions: '© Яндекс',
+        transition: 0,
+        cacheSize: 512, // Увеличиваем кэш
+        crossOrigin: 'anonymous'
+      }),
+      preload: 4, // Предзагрузка тайлов
+      useInterimTilesOnError: true
     });
 
     const russianLabelsLayer = new ol.layer.Tile({
       source: new ol.source.XYZ({
         url: Config.map.labelsUrl,
-        attributions: '© Яндекс'
+        attributions: '© Яндекс',
+        transition: 0,
+        cacheSize: 512,
+        crossOrigin: 'anonymous'
       }),
-      opacity: 0.8
+      opacity: 0.8,
+      preload: 4,
+      useInterimTilesOnError: true
     });
 
-    this.source = new ol.source.Vector();
+    this.source = new ol.source.Vector({
+      useSpatialIndex: true,
+      wrapX: false,
+      strategy: ol.loadingstrategy.bbox
+    });
     const vector = new ol.layer.Vector({
       source: this.source,
-      style: {
-        'fill-color': 'rgba(255, 255, 255, 0.2)',
-        'stroke-color': '#ffcc33',
-        'stroke-width': 2,
-        'circle-radius': 7,
-        'circle-fill-color': '#ffcc33',
-      },
+      style: new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 255, 0.1)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ffcc33',
+          width: 2
+        })
+      }),
+      updateWhileAnimating: true,
+      updateWhileInteracting: true
     });
-
-    const extent = ol.proj.get('EPSG:3857').getExtent().slice();
-    extent[0] += extent[0];
-    extent[2] += extent[2];
 
     this.map = new ol.Map({
       layers: [satelliteLayer, russianLabelsLayer, vector],
       target: 'map',
+      canvas: {
+        willReadFrequently: true
+      },
       view: new ol.View({
         center: ol.proj.fromLonLat(Config.map.defaultCenter),
         zoom: Config.map.defaultZoom,
-        extent,
+        enableRotation: false,
+        smoothExtentConstraint: true,
+        smoothResolutionConstraint: true,
+        transitionDuration: 500 // Плавные переходы
       }),
+      loadTilesWhileAnimating: true,
+      loadTilesWhileInteracting: true,
+      moveTolerance: 5
     });
 
     if (this.isDrawingMode) {
@@ -218,12 +243,19 @@ export const MapManager = {
         return;
       }
 
-      const area = this.calculateArea(geometry);
+      const area = this.calculateFeatureArea(feature);
       this.displayArea(area, feature);
 
-      geometry.on('change', () => {
-        const updatedArea = this.calculateArea(geometry);
-        this.displayArea(updatedArea, feature);
+      let updateTimeout;
+      this.geometryChangeListener = geometry.on('change', () => {
+        if (updateTimeout) {
+          clearTimeout(updateTimeout);
+        }
+
+        updateTimeout = setTimeout(() => {
+          const updatedArea = this.calculateFeatureArea(feature);
+          this.displayArea(updatedArea, feature);
+        }, 100);
       });
 
       feature.set('isTemporary', true);
@@ -298,12 +330,12 @@ export const MapManager = {
 
     if (n < 3) return false;
 
-    for (let i = 0; i < n - 1; i++) {
+    for (let i = 0; i < n - 2; i++) {
       const a1 = points[i];
       const a2 = points[i + 1];
 
-      for (let j = i + 2; j < n; j++) {
-        if (j === i + 1 || (i === 0 && j === n - 1)) continue;
+      for (let j = i + 2; j < Math.min(i + 10, n); j++) {
+        if (j === n - 1 && i === 0) continue;
 
         const b1 = points[j];
         const b2 = points[j + 1];
@@ -363,11 +395,30 @@ export const MapManager = {
   },
 
   calculateFeatureArea: function(feature) {
-    const geometry = feature.getGeometry();
-    if (geometry) {
-      return this.calculateArea(geometry);
+    try {
+      const geometry = feature.getGeometry();
+      if (!geometry) return 0;
+
+      const coordinates = geometry.getCoordinates();
+      const hash = this.getCoordinatesHash(coordinates);
+
+      if (this.areaCache.has(hash)) {
+        return this.areaCache.get(hash);
+      }
+
+      const area = this.calculateArea(geometry);
+
+      if (this.areaCache.size > 100) {
+        const firstKey = this.areaCache.keys().next().value;
+        this.areaCache.delete(firstKey);
+      }
+      this.areaCache.set(hash, area);
+
+      return area;
+    } catch (error) {
+      console.error('Ошибка при вычислении площади:', error);
+      return 0;
     }
-    return 0;
   },
 
   calculateArea: function(geometry) {
@@ -622,16 +673,19 @@ export const MapManager = {
 
     try {
       const polygon = new ol.geom.Polygon([field.coordinates]);
-
       const extent = polygon.getExtent();
 
+      // Используем анимацию с оптимизацией
       this.map.getView().fit(extent, {
         padding: [50, 50, 50, 50],
-        duration: 1000,
-        maxZoom: 15
+        duration: 800, // Увеличиваем длительность для плавности
+        maxZoom: 17, // Ограничиваем максимальное приближение
+        callback: (completed) => {
+          if (completed) {
+            this.highlightField(field);
+          }
+        }
       });
-
-      this.highlightField(field);
 
     } catch (error) {
       console.error('Ошибка при фокусировке на поле:', error);
@@ -669,5 +723,9 @@ export const MapManager = {
       this.source.removeFeature(this.highlightFeature);
       this.highlightFeature = null;
     }
+  },
+
+  getCoordinatesHash: function(coordinates) {
+    return JSON.stringify(coordinates);
   },
 };
