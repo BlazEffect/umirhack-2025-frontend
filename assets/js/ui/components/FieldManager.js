@@ -7,6 +7,69 @@ export class FieldManager {
   static currentFields = [];
   static temporaryFeatures = [];
 
+  static sampleRecommendations = [
+    {
+      id: 1,
+      crop_name: "Горох",
+      family_name: "Бобовые",
+      score: 95,
+      compatibility: "excellent",
+      reasons: [
+        "Бобовые обогащают почву азотом",
+        "Хороший предшественник для текущей культуры (пшеница)",
+        "Соответствует кислотности почвы (pH 6.2)"
+      ],
+      rotation_interval: 2,
+      nutrient_demand: "low",
+      water_demand: "medium"
+    },
+    {
+      id: 2,
+      crop_name: "Огурец",
+      family_name: "Тыквенные",
+      score: 82,
+      compatibility: "good",
+      reasons: [
+        "Разные типы корневых систем с предшественником",
+        "Подходит для суглинистой почвы",
+        "Хорошая диверсификация севооборота"
+      ],
+      rotation_interval: 2,
+      nutrient_demand: "high",
+      water_demand: "high"
+    },
+    {
+      id: 3,
+      crop_name: "Морковь",
+      family_name: "Зонтичные",
+      score: 78,
+      compatibility: "good",
+      reasons: [
+        "Нейтральная культура для севооборота",
+        "Не требовательна к питательным веществам",
+        "Хорошо растет после злаковых"
+      ],
+      rotation_interval: 3,
+      nutrient_demand: "medium",
+      water_demand: "medium"
+    },
+    {
+      id: 4,
+      crop_name: "Картофель",
+      family_name: "Пасленовые",
+      score: 45,
+      compatibility: "poor",
+      reasons: [
+        "Нарушен интервал севооборота (2 года вместо 4)",
+        "Высокая потребность в питательных веществах",
+        "Риск накопления болезней"
+      ],
+      rotation_interval: 4,
+      nutrient_demand: "high",
+      water_demand: "medium"
+    }
+  ];
+
   static sampleFields = [
     {
       id: 1,
@@ -97,7 +160,8 @@ export class FieldManager {
   static config = {
     focusOnMap: true,
     drawFieldsOnMap: true,
-    showDetails: true
+    showDetails: true,
+    showRecommendations: true
   }
 
   static async init(userConfig = {}) {
@@ -206,6 +270,10 @@ export class FieldManager {
 
     if (this.config.showDetails && isActive) {
       this.displayFieldDetails(field.id);
+    }
+
+    if (this.config.showRecommendations && isActive) {
+      this.displayRecommendations(this.sampleRecommendations);
     }
 
     return fieldElement;
@@ -629,6 +697,10 @@ export class FieldManager {
         if (this.config.showDetails) {
           this.displayFieldDetails(parseInt(fieldItem.dataset.fieldId));
         }
+
+        if (this.config.showRecommendations) {
+          this.displayRecommendations(this.sampleRecommendations);
+        }
       }
     });
   }
@@ -922,7 +994,6 @@ export class FieldManager {
 
     container.innerHTML = html;
 
-    // Добавляем обработчики событий
     document.querySelector('.edit-field-btn').addEventListener('click', function() {
       const fieldId = parseInt(this.getAttribute('data-field-id'));
       FieldManager.openFieldModal(fieldId);
@@ -947,14 +1018,12 @@ export class FieldManager {
     });
   };
 
-  // Функция для открытия модального окна поля
   static openFieldModal(fieldId = null) {
     const modal = document.getElementById('field-modal');
     const title = document.getElementById('field-modal-title');
     const form = document.getElementById('field-form');
 
     if (fieldId) {
-      // Редактирование существующего поля
       title.textContent = 'Редактировать поле';
       const field = this.sampleFields.find(f => f.id === fieldId);
       if (field) {
@@ -965,37 +1034,31 @@ export class FieldManager {
         form.description.value = field.description || '';
       }
     } else {
-      // Добавление нового поля
       title.textContent = 'Добавить новое поле';
       form.reset();
     }
 
     modal.classList.add('is-active');
 
-    // Обработчики для модального окна
     document.querySelector('.modal-background').addEventListener('click', this.closeFieldModal);
     document.querySelector('.delete').addEventListener('click', this.closeFieldModal);
     document.querySelector('.cancel-field-btn').addEventListener('click', this.closeFieldModal);
   };
 
-  // Функция для закрытия модального окна поля
   static closeFieldModal() {
     document.getElementById('field-modal').classList.remove('is-active');
   };
 
-  // Функция для открытия модального окна посадки
   static openPlantingModal(plantingId = null) {
     const modal = document.getElementById('planting-modal');
     const title = document.getElementById('planting-modal-title');
     const form = document.getElementById('planting-form');
     const cropSelect = form.crop_id;
 
-    // Заполняем список культур
     cropSelect.innerHTML = '<option value="">Выберите культуру</option>' +
       this.sampleCrops.map(crop => `<option value="${crop.id}">${crop.name} (${crop.family})</option>`).join('');
 
     if (plantingId) {
-      // Редактирование существующей посадки
       title.textContent = 'Редактировать посадку';
       this.currentPlantingId = plantingId;
       const field = this.sampleFields.find(f => f.plantings.some(p => p.id === plantingId));
@@ -1012,33 +1075,27 @@ export class FieldManager {
         form.notes.value = planting.notes || '';
       }
     } else {
-      // Добавление новой посадки
       title.textContent = 'Добавить посадку';
       this.currentPlantingId = null;
       form.reset();
-      // Устанавливаем текущий год по умолчанию
       form.year.value = new Date().getFullYear();
     }
 
     modal.classList.add('is-active');
 
-    // Обработчики для модального окна
     document.querySelector('.modal-background').addEventListener('click', this.closePlantingModal);
     document.querySelector('.delete').addEventListener('click', this.closePlantingModal);
     document.querySelector('.cancel-planting-btn').addEventListener('click', this.closePlantingModal);
   };
 
-  // Функция для закрытия модального окна посадки
   static closePlantingModal() {
     document.getElementById('planting-modal').classList.remove('is-active');
   };
 
-  // Функция для сохранения поля
   static saveField() {
     const form = document.getElementById('field-form');
     const formData = new FormData(form);
 
-    // Здесь будет вызов API для сохранения поля
     console.log('Сохранение поля:', {
       name: formData.get('name'),
       area: formData.get('area'),
@@ -1047,24 +1104,24 @@ export class FieldManager {
       description: formData.get('description')
     });
 
-    showNotification('Поле успешно сохранено!', 'success');
+    EventManager.emit('notification:show', {
+      message: 'Поле успешно сохранено!',
+      type: 'success'
+    });
+
     this.closeFieldModal();
 
-    // Обновляем список полей
-    displayFieldsList(this.sampleFields);
     if (this.currentFieldId) {
-      displayFieldDetails(this.currentFieldId);
+      this.displayFieldDetails(this.currentFieldId);
     }
   };
 
-  // Функция для сохранения посадки
   static savePlanting() {
     const form = document.getElementById('planting-form');
     const formData = new FormData(form);
     const cropId = formData.get('crop_id');
     const crop = this.sampleCrops.find(c => c.id === parseInt(cropId));
 
-    // Здесь будет вызов API для сохранения посадки
     console.log('Сохранение посадки:', {
       field_id: this.currentFieldId,
       crop_id: cropId,
@@ -1078,27 +1135,180 @@ export class FieldManager {
       notes: formData.get('notes')
     });
 
-    showNotification('Посадка успешно сохранена!', 'success');
+    EventManager.emit('notification:show', {
+      message: 'Посадка успешно сохранена!',
+      type: 'success'
+    });
+
     this.closePlantingModal();
 
-    // Обновляем детали поля
     if (this.currentFieldId) {
-      displayFieldDetails(this.currentFieldId);
+      this.displayFieldDetails(this.currentFieldId);
     }
   };
 
-  // Функция для удаления посадки
   static deletePlanting(plantingId) {
     if (confirm('Вы уверены, что хотите удалить эту посадку?')) {
-      // Здесь будет вызов API для удаления посадки
       console.log('Удаление посадки:', plantingId);
 
-      showNotification('Посадка успешно удалена!', 'success');
+      EventManager.emit('notification:show', {
+        message: 'Посадка успешно удалена!',
+        type: 'success'
+      });
 
-      // Обновляем детали поля
       if (this.currentFieldId) {
-        displayFieldDetails(this.currentFieldId);
+        this.displayFieldDetails(this.currentFieldId);
       }
     }
+  };
+
+  static displayRecommendations(recommendations) {
+    const container = document.getElementById('recommendations-content');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const emptyState = document.getElementById('empty-state');
+
+    loadingIndicator.classList.add('is-hidden');
+
+    if (recommendations.length === 0) {
+      emptyState.classList.remove('is-hidden');
+      return;
+    }
+
+    recommendations.sort((a, b) => b.score - a.score);
+
+    let html = '';
+
+    recommendations.forEach(rec => {
+      const compatibilityText = {
+        'excellent': 'Отлично',
+        'good': 'Хорошо',
+        'fair': 'Удовлетворительно',
+        'poor': 'Не рекомендуется'
+      };
+
+      const compatibilityIcons = {
+        'excellent': 'fa-star',
+        'good': 'fa-thumbs-up',
+        'fair': 'fa-check',
+        'poor': 'fa-exclamation-triangle'
+      };
+
+      html += `
+                <div class="card recommendation-card">
+                    <header class="card-header">
+                        <div class="is-flex is-align-items-center crop-info">
+                            <div class="crop-icon ${rec.compatibility}">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="is-flex-grow-1">
+                                <h3 class="is-size-5 has-text-weight-bold">${rec.crop_name}</h3>
+                                <p class="has-text-grey">${rec.family_name}</p>
+                            </div>
+                            <div class="is-flex is-align-items-center">
+                                <span class="score-badge ${rec.compatibility} mr-3">
+                                    ${rec.score}/100
+                                </span>
+                                <span class="compatibility-tag has-background-${rec.compatibility === 'excellent' ? 'success' : rec.compatibility === 'good' ? 'info' : rec.compatibility === 'fair' ? 'warning' : 'danger'}-light has-text-${rec.compatibility === 'excellent' ? 'success' : rec.compatibility === 'good' ? 'info' : rec.compatibility === 'fair' ? 'warning' : 'danger'}">
+                                    <i class="fas ${compatibilityIcons[rec.compatibility]} mr-1"></i>
+                                    ${compatibilityText[rec.compatibility]}
+                                </span>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="columns">
+                                <div class="column is-8">
+                                    <h4 class="is-size-6 has-text-weight-semibold mb-3">Причины рекомендации:</h4>
+                                    <ul class="reasons-list">
+                                        ${rec.reasons.map(reason => `
+                                            <li>
+                                                <span class="reason-icon">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </span>
+                                                <span>${reason}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <div class="column is-4">
+                                    <div class="box is-shadowless has-background-light">
+                                        <h5 class="is-size-6 has-text-weight-semibold mb-3">Характеристики:</h5>
+                                        <div class="mb-2">
+                                            <strong>Интервал:</strong> ${rec.rotation_interval} года
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Питание:</strong>
+                                            <span class="tag is-light is-capitalized">${rec.nutrient_demand}</span>
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Полив:</strong>
+                                            <span class="tag is-light is-capitalized">${rec.water_demand}</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill ${rec.compatibility}" style="width: ${rec.score}%"></div>
+                                        </div>
+                                        <small class="has-text-grey">Оценка пригодности</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <button class="card-footer-item apply-btn" data-crop-id="${rec.id}" data-crop-name="${rec.crop_name}">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Применить
+                        </button>
+                        <button class="card-footer-item details-btn">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Подробнее
+                        </button>
+                    </footer>
+                </div>
+            `;
+    });
+
+    container.innerHTML = html;
+
+    document.querySelectorAll('.apply-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const cropId = this.getAttribute('data-crop-id');
+        const cropName = this.getAttribute('data-crop-name');
+        this.openApplyModal(cropId, cropName);
+      });
+    });
+  };
+
+  static openApplyModal(cropId, cropName) {
+    const modal = document.getElementById('apply-modal');
+    const targetYear = document.getElementById('target-year').value;
+
+    document.getElementById('modal-crop-name').textContent = cropName;
+    document.getElementById('modal-target-year').textContent = targetYear;
+
+    modal.classList.add('is-active');
+
+    document.querySelector('.modal-background').addEventListener('click', this.closeApplyModal);
+    document.querySelector('.delete').addEventListener('click', this.closeApplyModal);
+    document.querySelector('.cancel-apply').addEventListener('click', this.closeApplyModal);
+
+    document.getElementById('confirm-apply').addEventListener('click', function() {
+      FieldManager.applyRecommendation(cropId, cropName, targetYear);
+    });
+  };
+
+  static closeApplyModal() {
+    document.getElementById('apply-modal').classList.remove('is-active');
+  };
+
+  static applyRecommendation(cropId, cropName, targetYear) {
+    console.log(`Применяем рекомендацию: ${cropName} для ${targetYear} года`);
+
+    EventManager.emit('notification:show', {
+      message: `Рекомендация "${cropName}" успешно применена для ${targetYear} года!`,
+      type: 'success'
+    });
+
+    this.closeApplyModal();
   };
 }

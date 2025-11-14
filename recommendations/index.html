@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Поля</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Убрали OpenLayers CSS -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+</head>
+<body>
+<!-- Весь header и sidebar остаются без изменений -->
+<header class="header">
+    <nav class="navbar is-fixed-top is-custom-navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item logo-container" href="/index.html">
+                <img src="../assets/images/logo.png" alt="логотип" class="header-logo">
+                <span class="header-text">AgriManage</span>
+            </a>
+
+            <div class="navbar-burger burger" data-target="navbarMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <div id="mainNavbar" class="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="field is-grouped is-align-items-center">
+                        <div class="control">
+                            <div class="dropdown">
+                                <div class="dropdown-trigger">
+                                    <button class="button is-small" aria-haspopup="true" aria-controls="season-dropdown">
+                                        <span></span>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="dropdown-menu" id="season-dropdown" role="menu">
+                                    <div class="dropdown-content">
+                                        <hr class="dropdown-divider">
+                                        <a href="#" class="dropdown-item add-season-item" data-target="add-season-modal">
+                                            <span class="icon is-small">
+                                                <i class="fas fa-plus"></i>
+                                            </span>
+                                            <span>Создать новый сезон</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control">
+                            <input class="input is-small" type="text" placeholder="Поиск полей...">
+                        </div>
+                        <div class="control">
+                            <button class="button is-small is-white profile-button">
+                            <span class="icon">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="main">
+    <div class="main-container">
+        <div class="sidebar-container columns is-gapless" id="sidebarContainer">
+            <div class="column is-narrow sidebar-column">
+                <aside class="menu sidebar-menu">
+                    <div class="menu-header">
+                        <h3 class="menu-label">Навигация</h3>
+                    </div>
+                    <ul class="menu-list">
+                        <li>
+                            <a href="/dashboard/" class="is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </span>
+                                <span>Панель управления</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/fields/" class="is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-seedling"></i>
+                                </span>
+                                <span>Поля</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/fields_edit/" class="is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-tractor"></i>
+                                </span>
+                                <span>Изменение полей</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="is-active is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-cogs"></i>
+                                </span>
+                                <span>Рекомендации</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="is-flex is-align-items-center logout-item">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </span>
+                                <span>Выход</span>
+                            </a>
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+
+            <div class="column fields-column">
+                <aside class="fields-panel">
+                    <div class="panel is-shadowless">
+                        <div class="panel-heading is-flex is-justify-content-space-between is-align-items-center py-3">
+                            <h3 class="is-size-6 has-text-weight-semibold fields-title">Фермерские поля</h3>
+                            <button class="button is-small is-success add-field-btn">
+                                <span class="icon is-small">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>Добавить</span>
+                            </button>
+                        </div>
+
+                        <div class="panel-block">
+                            <p class="control has-icons-left">
+                                <input class="input is-small" type="text" placeholder="Поиск полей...">
+                                <span class="icon is-small is-left">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            </p>
+                        </div>
+
+                        <div class="fields-list">
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="fields-panel is-hidden">
+                    <div class="panel is-shadowless">
+                        <div class="panel-heading is-flex is-justify-content-space-between is-align-items-center py-3">
+                            <h3 class="is-size-6 has-text-weight-semibold fields-title">Добавленные поля</h3>
+                        </div>
+
+                        <div class="field-forms-container">
+                        </div>
+
+                        <div class="field control-form-buttons">
+                            <div class="control">
+                                <button type="button" class="button is-link is-light back-btn">Назад</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-success fields-button" type="submit">Добавить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommendations-container" id="recommendationsContainer">
+            <div class="page-header">
+                <h1 class="page-title">Рекомендации по севообороту</h1>
+                <p class="page-subtitle">Интеллектуальные рекомендации для повышения урожайности и здоровья почвы</p>
+            </div>
+
+            <div class="field-info-card">
+                <div class="columns is-align-items-center">
+                    <div class="column">
+                        <h2 class="is-size-4 has-text-white has-text-weight-bold">Северное поле</h2>
+                        <p class="has-text-white">Площадь: 5.2 га • Тип почвы: Суглинок</p>
+                    </div>
+                    <div class="column is-narrow">
+                        <div class="field">
+                            <label class="label has-text-white">Целевой год</label>
+                            <div class="control">
+                                <div class="select is-small">
+                                    <select id="target-year">
+                                        <option>2024</option>
+                                        <option selected>2025</option>
+                                        <option>2026</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Рекомендаций</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Года истории</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">85%</div>
+                    <div class="stat-label">Точность данных</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">Применено рекомендаций</div>
+                </div>
+            </div>
+
+            <div id="recommendations-content">
+            </div>
+
+            <div id="loading-indicator" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Загружаем рекомендации...</p>
+            </div>
+
+            <div id="empty-state" class="empty-state is-hidden">
+                <div class="icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <h3 class="is-size-5 has-text-weight-semibold">Рекомендации не найдены</h3>
+                <p>Добавьте данные о поле и истории посадок для получения рекомендаций</p>
+                <button class="button is-primary mt-4">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                    <span>Добавить данные поля</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="add-season-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Создание нового сезона</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="add-season-form">
+                    <div class="field">
+                        <label class="label">Название сезона</label>
+                        <div class="control">
+                            <input class="input" type="text" placeholder="Например: Сезон 2025" name="seasonName"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Дата начала</label>
+                        <div class="control">
+                            <input class="input" type="date" name="startDate" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Дата окончания</label>
+                        <div class="control">
+                            <input class="input" type="date" name="endDate" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Описание (необязательно)</label>
+                        <div class="control">
+                            <textarea class="textarea" placeholder="Дополнительная информация о сезоне..."
+                                      name="description" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success create-season-btn" type="submit" form="add-season-form">
+                    Создать сезон
+                </button>
+                <button class="button cancel-season-btn">Отмена</button>
+            </footer>
+        </div>
+    </div>
+
+    <div class="modal" id="apply-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Применить рекомендацию</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="content">
+                    <p>Вы уверены, что хотите применить рекомендацию по посадке <strong id="modal-crop-name">Гороха</strong> на поле <strong>Северное поле</strong> в <strong id="modal-target-year">2025</strong> году?</p>
+                    <div class="notification is-info is-light mt-4">
+                        <p><strong>Рекомендация будет сохранена как план посадки</strong></p>
+                        <p class="is-size-7">Вы сможете изменить или отменить план в любое время</p>
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" id="confirm-apply">Применить</button>
+                <button class="button cancel-apply">Отмена</button>
+            </footer>
+        </div>
+    </div>
+</main>
+
+<script src="index.js" type="module"></script>
+</body>
+</html>
