@@ -575,7 +575,6 @@ body {
     font-size: 1rem;
 }
 
-/* Карточки полей */
 .field-card {
     background: white;
     border-radius: 8px;
@@ -619,7 +618,6 @@ body {
     font-weight: 600;
 }
 
-/* Форма редактирования */
 .edit-form-container {
     background: white;
     border-radius: 8px;
@@ -653,7 +651,6 @@ body {
     color: var(--primary-color);
 }
 
-/* Таблица истории посадок */
 .planting-table {
     width: 100%;
     background: white;

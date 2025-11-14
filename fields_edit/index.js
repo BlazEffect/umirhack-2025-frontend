@@ -20,6 +20,7 @@ import {Notification} from "../assets/js/ui/components/Notification.js";
     FieldManager.init({
       focusOnMap: false,
       drawFieldsOnMap: false,
+      showRecommendations: false
     });
 
     EventHandler.init();
