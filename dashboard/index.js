@@ -6,6 +6,7 @@ import {ModalManager} from "../assets/js/ui/components/ModalManager.js";
 import {SeasonManager} from "../assets/js/ui/components/SeasonManager.js";
 import {EventHandler} from "../assets/js/ui/handlers/EventHandler.js";
 import {Notification} from "../assets/js/ui/components/Notification.js";
+import {FieldManager} from "../assets/js/ui/components/FieldManager.js";
 
 (function() {
   'use strict';
@@ -21,6 +22,10 @@ import {Notification} from "../assets/js/ui/components/Notification.js";
     SeasonManager.init({
       enableCropsUpdate: false
     });
+    FieldManager.init({
+      showDetails: false,
+      showRecommendations: false
+    })
 
     EventHandler.init();
     Notification.init();

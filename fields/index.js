@@ -23,7 +23,8 @@ import {Notification} from "../assets/js/ui/components/Notification.js";
 
     SeasonManager.init();
     FieldManager.init({
-      showDetails: false
+      showDetails: false,
+      showRecommendations: false
     });
 
     EventHandler.init();
