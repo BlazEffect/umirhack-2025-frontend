@@ -189,7 +189,6 @@ export const MapManager = {
         this.geometryChangeListener = null;
       }
 
-      // Удаляем форму, если рисование отменено
       if (this.currentFeature) {
         EventManager.emit('field:removeFieldForm', this.currentFeature);
         this.currentFeature = null;
@@ -227,6 +226,8 @@ export const MapManager = {
         this.displayArea(updatedArea, feature);
       });
 
+      feature.set('isTemporary', true);
+
       EventManager.emit('map:drawingCompleted', { feature, area });
 
       this.currentFeature = null;
@@ -249,8 +250,14 @@ export const MapManager = {
       this.snap = null;
     }
 
+    const features = this.source.getFeatures();
+    features.forEach(feature => {
+      if (!feature.get('id') || feature.get('isTemporary')) {
+        this.source.removeFeature(feature);
+      }
+    });
+
     this.currentFeature = null;
-    this.source.clear();
   },
 
   checkSelfIntersection: function() {
@@ -330,17 +337,50 @@ export const MapManager = {
       this.disableDrawingMode();
     });
 
-    EventManager.on('map:calculateArea', (polygon) => {
-      this.calculateArea(polygon);
-    });
-
     EventManager.on('map:renderFields', (data) => {
       this.displayFieldsFromData(data);
     });
+
+    EventManager.on('map:saveField', (feature, fieldsData) => {
+      this.saveField(feature, fieldsData);
+    });
+
+    EventManager.on('map:removeFeature', (feature) => {
+      this.removeFeature(feature);
+    });
+
+    EventManager.on('field:focus', (field) => {
+      this.focusOnField(field);
+    });
+
+    EventManager.on('field:requestArea', (data) => {
+      const { feature, callback } = data;
+      const area = this.getAreaForFeature(feature);
+      if (callback && typeof callback === 'function') {
+        callback(area);
+      }
+    });
   },
 
-  calculateArea: function(polygon) {
-    return ol.sphere.getArea(polygon) / 10000;
+  calculateFeatureArea: function(feature) {
+    const geometry = feature.getGeometry();
+    if (geometry) {
+      return this.calculateArea(geometry);
+    }
+    return 0;
+  },
+
+  calculateArea: function(geometry) {
+    try {
+      return ol.sphere.getArea(geometry) / 10000;
+    } catch (error) {
+      console.error('Ошибка при вычислении площади:', error);
+      return 0;
+    }
+  },
+
+  getAreaForFeature: function(feature) {
+    return this.calculateFeatureArea(feature);
   },
 
   displayArea: function(area, feature = null) {
@@ -480,10 +520,11 @@ export const MapManager = {
         const polygon = new ol.geom.Polygon([field.coordinates]);
         const feature = new ol.Feature({
           geometry: polygon,
+          id: field.id,
           name: field.name,
           area: field.area,
           crop: field.crop,
-          id: field.id,
+          isTemporary: false,
           type: 'field'
         });
 
@@ -527,5 +568,106 @@ export const MapManager = {
         offsetY: -15
       })
     });
+  },
+
+  saveField: function(features, fieldsData) {
+    if (features.length !== fieldsData.length) {
+      console.error('Количество фич не соответствует количеству данных полей');
+      return false;
+    }
+
+    const results = [];
+
+    features.forEach((feature, index) => {
+      const fieldData = fieldsData[index];
+
+      if (fieldData && fieldData.id) {
+        feature.set('id', fieldData.id);
+        feature.set('name', fieldData.name);
+        feature.set('area', fieldData.area);
+        feature.set('crop', fieldData.crop);
+        feature.set('isTemporary', false);
+
+        if (fieldData.coordinates && fieldData.coordinates.length >= 3) {
+          const polygon = new ol.geom.Polygon([fieldData.coordinates]);
+          feature.setGeometry(polygon);
+        }
+
+        feature.setStyle(this.getFieldStyle(fieldData));
+
+        results.push({
+          success: true,
+          feature: feature,
+          fieldData: fieldData
+        });
+      } else {
+        console.error('Отсутствуют данные поля или ID для фичи', feature);
+        results.push({
+          success: false,
+          feature: feature,
+          error: 'Отсутствуют данные поля или ID'
+        });
+      }
+    });
+
+    return features.length === 1 ? results[0] : results;
+  },
+
+  removeFeature: function(feature) {
+    this.source.removeFeature(feature);
+  },
+
+  focusOnField: function(field) {
+    if (!field || !field.coordinates) return;
+
+    try {
+      const polygon = new ol.geom.Polygon([field.coordinates]);
+
+      const extent = polygon.getExtent();
+
+      this.map.getView().fit(extent, {
+        padding: [50, 50, 50, 50],
+        duration: 1000,
+        maxZoom: 15
+      });
+
+      this.highlightField(field);
+
+    } catch (error) {
+      console.error('Ошибка при фокусировке на поле:', error);
+    }
+  },
+
+  highlightField: function(field) {
+    this.removeFieldHighlight();
+
+    const polygon = new ol.geom.Polygon([field.coordinates]);
+    this.highlightFeature = new ol.Feature({
+      geometry: polygon,
+      name: 'highlight'
+    });
+
+    this.highlightFeature.setStyle(new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: '#ffff00',
+        width: 4
+      }),
+      fill: new ol.style.Fill({
+        color: 'rgba(255, 255, 0, 0.1)'
+      })
+    }));
+
+    this.source.addFeature(this.highlightFeature);
+
+    setTimeout(() => {
+      this.removeFieldHighlight();
+    }, 3000);
+  },
+
+  removeFieldHighlight: function() {
+    if (this.highlightFeature) {
+      this.source.removeFeature(this.highlightFeature);
+      this.highlightFeature = null;
+    }
   },
 };
