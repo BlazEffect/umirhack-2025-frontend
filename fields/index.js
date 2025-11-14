@@ -22,7 +22,9 @@ import {Notification} from "../assets/js/ui/components/Notification.js";
     ModalManager.init();
 
     SeasonManager.init();
-    FieldManager.init();
+    FieldManager.init({
+      showDetails: false
+    });
 
     EventHandler.init();
     Notification.init();
