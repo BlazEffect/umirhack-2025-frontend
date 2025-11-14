@@ -7,7 +7,102 @@ export class FieldManager {
   static currentFields = [];
   static temporaryFeatures = [];
 
-  static async init() {
+  static sampleFields = [
+    {
+      id: 1,
+      name: "Северное поле",
+      area_ha: 5.2,
+      soil_type: "суглинок",
+      coordinates: [[4200785.607414969, 7543425.726029336],
+        [4184889.2994700456, 7495639.714544913],
+        [4216783.808550349, 7496047.274228949],
+        [4233291.512954693, 7513164.650363283],
+        [4200785.607414969, 7543425.726029336]],
+      plantings: [
+        {
+          id: 1,
+          crop_name: "Пшеница",
+          crop_family: "Злаки",
+          year: 2023,
+          season: "основной",
+          planting_date: "2023-04-15",
+          harvest_date: "2023-08-20",
+          yield_amount: 3.2,
+          yield_quality: "good",
+          notes: "Хороший урожай, благоприятные погодные условия"
+        },
+        {
+          id: 2,
+          crop_name: "Кукуруза",
+          crop_family: "Злаки",
+          year: 2022,
+          season: "основной",
+          planting_date: "2022-05-01",
+          harvest_date: "2022-09-15",
+          yield_amount: 5.8,
+          yield_quality: "excellent",
+          notes: "Рекордный урожай"
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "Южное поле",
+      area_ha: 3.8,
+      soil_type: "чернозем",
+      coordinates: null,
+      description: "Поле в южной части с хорошим дренажем",
+      plantings: [
+        {
+          id: 3,
+          crop_name: "Картофель",
+          crop_family: "Пасленовые",
+          year: 2023,
+          season: "весенний",
+          planting_date: "2023-04-10",
+          harvest_date: "2023-08-30",
+          yield_amount: 25.5,
+          yield_quality: "good",
+          notes: "Средняя урожайность, проблемы с колорадским жуком"
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "Западный участок",
+      area_ha: 2.1,
+      soil_type: "супесь",
+      coordinates: null,
+      description: "Небольшой участок для экспериментальных культур",
+      plantings: []
+    }
+  ];
+
+  static sampleCrops = [
+    { id: 1, name: "Пшеница", family: "Злаки" },
+    { id: 2, name: "Кукуруза", family: "Злаки" },
+    { id: 3, name: "Картофель", family: "Пасленовые" },
+    { id: 4, name: "Горох", family: "Бобовые" },
+    { id: 5, name: "Огурец", family: "Тыквенные" },
+    { id: 6, name: "Томат", family: "Пасленовые" },
+    { id: 7, name: "Морковь", family: "Зонтичные" },
+    { id: 8, name: "Свекла", family: "Амарантовые" },
+    { id: 9, name: "Лук", family: "Луковые" },
+    { id: 10, name: "Капуста", family: "Капустные" }
+  ];
+
+  static currentFieldId = null;
+  static currentPlantingId = null;
+
+  static config = {
+    focusOnMap: true,
+    drawFieldsOnMap: true,
+    showDetails: true
+  }
+
+  static async init(userConfig = {}) {
+    this.config = { ...this.config, ...userConfig };
+
     let fieldsData = await this.loadFieldsFromAPI();
 
     if (fieldsData) {
@@ -102,10 +197,16 @@ export class FieldManager {
       this.handleDeleteField(field.id);
     });
 
-    fieldElement.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.focusOnField(field);
-    });
+    if (this.config.focusOnMap) {
+      fieldElement.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.focusOnField(field);
+      });
+    }
+
+    if (this.config.showDetails && isActive) {
+      this.displayFieldDetails(field.id);
+    }
 
     return fieldElement;
   }
@@ -343,7 +444,6 @@ export class FieldManager {
         type: 'success'
       });
 
-      EventManager.emit('field:deleted', fieldId);
       await this.reloadFieldsList();
       return await response.json();
     } catch (error) {
@@ -367,7 +467,10 @@ export class FieldManager {
     if (fieldsData) {
       this.currentFields = fieldsData;
       this.renderFieldsList(fieldsData);
-      EventManager.emit('map:renderFields', fieldsData);
+
+      if (this.config.drawFieldsOnMap) {
+        EventManager.emit('map:renderFields', fieldsData);
+      }
     }
   }
 
@@ -522,6 +625,10 @@ export class FieldManager {
         allFieldItems.forEach(item => item.classList.remove('is-active'));
 
         fieldItem.classList.add('is-active');
+
+        if (this.config.showDetails) {
+          this.displayFieldDetails(parseInt(fieldItem.dataset.fieldId));
+        }
       }
     });
   }
@@ -680,5 +787,318 @@ export class FieldManager {
     EventManager.emit('field:focus', field);
 
     EventManager.emit('field:selected', field.id);
+  };
+
+  static displayFieldDetails(fieldId) {
+    const field = this.sampleFields.find(f => f.id === fieldId);
+    const container = document.getElementById('field-edit-content');
+
+    if (!field) return;
+
+    const plantingCount = field.plantings ? field.plantings.length : 0;
+    const currentYear = new Date().getFullYear();
+    const currentYearPlantings = field.plantings ? field.plantings.filter(p => p.year === currentYear).length : 0;
+
+    let html = `
+            <div class="edit-form-container">
+                <!-- Статистика -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-number">${field.area_ha}</div>
+                        <div class="stat-label">Гектаров</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${plantingCount}</div>
+                        <div class="stat-label">Посадок всего</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${currentYearPlantings}</div>
+                        <div class="stat-label">Посадок в ${currentYear}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${field.soil_type}</div>
+                        <div class="stat-label">Тип почвы</div>
+                    </div>
+                </div>
+
+                <!-- Информация о поле -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Основная информация
+                    </h3>
+                    <div class="field-details-actions">
+                        <h4 class="is-size-5 has-text-weight-semibold">${field.name}</h4>
+                        <button class="button is-small is-outlined edit-field-btn" data-field-id="${field.id}">
+                            <span class="icon is-small">
+                                <i class="fas fa-edit"></i>
+                            </span>
+                            <span>Редактировать</span>
+                        </button>
+                    </div>
+                    
+                    <div class="content">
+                        <p><strong>Площадь:</strong> ${field.area_ha} гектаров</p>
+                        <p><strong>Тип почвы:</strong> ${field.soil_type}</p>
+                        ${field.description ? `<p><strong>Описание:</strong> ${field.description}</p>` : ''}
+                        ${field.coordinates ? `
+                            <div class="map-preview">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                Координаты заданы
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <!-- История посадок -->
+                <div class="form-section">
+                    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+                        <h3 class="section-title">
+                            <i class="fas fa-history"></i>
+                            История посадок
+                        </h3>
+                        <button class="button is-primary is-small add-planting-btn">
+                            <span class="icon">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                            <span>Добавить посадку</span>
+                        </button>
+                    </div>
+
+                    ${field.plantings && field.plantings.length > 0 ? `
+                        <table class="planting-table">
+                            <thead>
+                                <tr>
+                                    <th>Год</th>
+                                    <th>Культура</th>
+                                    <th>Сезон</th>
+                                    <th>Урожайность</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${field.plantings.map(planting => `
+                                    <tr>
+                                        <td>${planting.year}</td>
+                                        <td>
+                                            <span class="crop-badge">
+                                                <i class="fas fa-seedling"></i>
+                                                ${planting.crop_name}
+                                            </span>
+                                        </td>
+                                        <td>${planting.season}</td>
+                                        <td>
+                                            ${planting.yield_amount ? `
+                                                <span class="has-text-weight-semibold">${planting.yield_amount} т/га</span>
+                                                ${planting.yield_quality ? `<span class="tag is-light is-capitalized ml-1">${planting.yield_quality}</span>` : ''}
+                                            ` : 'Не указано'}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="edit-btn edit-planting-btn" data-planting-id="${planting.id}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="delete-btn delete-planting-btn" data-planting-id="${planting.id}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : `
+                        <div class="empty-state">
+                            <div class="icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <h3 class="is-size-5 has-text-weight-semibold">Нет данных о посадках</h3>
+                            <p>Добавьте первую посадку для этого поля</p>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+
+    container.innerHTML = html;
+
+    // Добавляем обработчики событий
+    document.querySelector('.edit-field-btn').addEventListener('click', function() {
+      const fieldId = parseInt(this.getAttribute('data-field-id'));
+      FieldManager.openFieldModal(fieldId);
+    });
+
+    document.querySelector('.add-planting-btn').addEventListener('click', function() {
+      FieldManager.openPlantingModal(null);
+    });
+
+    document.querySelectorAll('.edit-planting-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const plantingId = parseInt(this.getAttribute('data-planting-id'));
+        FieldManager.openPlantingModal(plantingId);
+      });
+    });
+
+    document.querySelectorAll('.delete-planting-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const plantingId = parseInt(this.getAttribute('data-planting-id'));
+        FieldManager.deletePlanting(plantingId);
+      });
+    });
+  };
+
+  // Функция для открытия модального окна поля
+  static openFieldModal(fieldId = null) {
+    const modal = document.getElementById('field-modal');
+    const title = document.getElementById('field-modal-title');
+    const form = document.getElementById('field-form');
+
+    if (fieldId) {
+      // Редактирование существующего поля
+      title.textContent = 'Редактировать поле';
+      const field = this.sampleFields.find(f => f.id === fieldId);
+      if (field) {
+        form.name.value = field.name;
+        form.area.value = field.area_ha;
+        form.soil_type.value = field.soil_type;
+        form.coordinates.value = field.coordinates || '';
+        form.description.value = field.description || '';
+      }
+    } else {
+      // Добавление нового поля
+      title.textContent = 'Добавить новое поле';
+      form.reset();
+    }
+
+    modal.classList.add('is-active');
+
+    // Обработчики для модального окна
+    document.querySelector('.modal-background').addEventListener('click', this.closeFieldModal);
+    document.querySelector('.delete').addEventListener('click', this.closeFieldModal);
+    document.querySelector('.cancel-field-btn').addEventListener('click', this.closeFieldModal);
+  };
+
+  // Функция для закрытия модального окна поля
+  static closeFieldModal() {
+    document.getElementById('field-modal').classList.remove('is-active');
+  };
+
+  // Функция для открытия модального окна посадки
+  static openPlantingModal(plantingId = null) {
+    const modal = document.getElementById('planting-modal');
+    const title = document.getElementById('planting-modal-title');
+    const form = document.getElementById('planting-form');
+    const cropSelect = form.crop_id;
+
+    // Заполняем список культур
+    cropSelect.innerHTML = '<option value="">Выберите культуру</option>' +
+      this.sampleCrops.map(crop => `<option value="${crop.id}">${crop.name} (${crop.family})</option>`).join('');
+
+    if (plantingId) {
+      // Редактирование существующей посадки
+      title.textContent = 'Редактировать посадку';
+      this.currentPlantingId = plantingId;
+      const field = this.sampleFields.find(f => f.plantings.some(p => p.id === plantingId));
+      if (field) {
+        const planting = field.plantings.find(p => p.id === plantingId);
+        const crop = this.sampleCrops.find(c => c.name === planting.crop_name);
+        if (crop) form.crop_id.value = crop.id;
+        form.year.value = planting.year;
+        form.season.value = planting.season;
+        form.planting_date.value = planting.planting_date || '';
+        form.harvest_date.value = planting.harvest_date || '';
+        form.yield_amount.value = planting.yield_amount || '';
+        form.yield_quality.value = planting.yield_quality || '';
+        form.notes.value = planting.notes || '';
+      }
+    } else {
+      // Добавление новой посадки
+      title.textContent = 'Добавить посадку';
+      this.currentPlantingId = null;
+      form.reset();
+      // Устанавливаем текущий год по умолчанию
+      form.year.value = new Date().getFullYear();
+    }
+
+    modal.classList.add('is-active');
+
+    // Обработчики для модального окна
+    document.querySelector('.modal-background').addEventListener('click', this.closePlantingModal);
+    document.querySelector('.delete').addEventListener('click', this.closePlantingModal);
+    document.querySelector('.cancel-planting-btn').addEventListener('click', this.closePlantingModal);
+  };
+
+  // Функция для закрытия модального окна посадки
+  static closePlantingModal() {
+    document.getElementById('planting-modal').classList.remove('is-active');
+  };
+
+  // Функция для сохранения поля
+  static saveField() {
+    const form = document.getElementById('field-form');
+    const formData = new FormData(form);
+
+    // Здесь будет вызов API для сохранения поля
+    console.log('Сохранение поля:', {
+      name: formData.get('name'),
+      area: formData.get('area'),
+      soil_type: formData.get('soil_type'),
+      coordinates: formData.get('coordinates'),
+      description: formData.get('description')
+    });
+
+    showNotification('Поле успешно сохранено!', 'success');
+    this.closeFieldModal();
+
+    // Обновляем список полей
+    displayFieldsList(this.sampleFields);
+    if (this.currentFieldId) {
+      displayFieldDetails(this.currentFieldId);
+    }
+  };
+
+  // Функция для сохранения посадки
+  static savePlanting() {
+    const form = document.getElementById('planting-form');
+    const formData = new FormData(form);
+    const cropId = formData.get('crop_id');
+    const crop = this.sampleCrops.find(c => c.id === parseInt(cropId));
+
+    // Здесь будет вызов API для сохранения посадки
+    console.log('Сохранение посадки:', {
+      field_id: this.currentFieldId,
+      crop_id: cropId,
+      crop_name: crop ? crop.name : '',
+      year: formData.get('year'),
+      season: formData.get('season'),
+      planting_date: formData.get('planting_date'),
+      harvest_date: formData.get('harvest_date'),
+      yield_amount: formData.get('yield_amount'),
+      yield_quality: formData.get('yield_quality'),
+      notes: formData.get('notes')
+    });
+
+    showNotification('Посадка успешно сохранена!', 'success');
+    this.closePlantingModal();
+
+    // Обновляем детали поля
+    if (this.currentFieldId) {
+      displayFieldDetails(this.currentFieldId);
+    }
+  };
+
+  // Функция для удаления посадки
+  static deletePlanting(plantingId) {
+    if (confirm('Вы уверены, что хотите удалить эту посадку?')) {
+      // Здесь будет вызов API для удаления посадки
+      console.log('Удаление посадки:', plantingId);
+
+      showNotification('Посадка успешно удалена!', 'success');
+
+      // Обновляем детали поля
+      if (this.currentFieldId) {
+        displayFieldDetails(this.currentFieldId);
+      }
+    }
   };
 }
