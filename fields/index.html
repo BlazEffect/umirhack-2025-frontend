@@ -1,22 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Дашборд</title>
+    <title>Поля</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="../assets/css/ol.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
 
-<!--    <script src="assets/js/protect-page.js"></script>-->
+    <!--    <script src="assets/js/protect-page.js"></script>-->
 </head>
 <body>
-
 <header class="header">
     <nav class="navbar is-fixed-top is-custom-navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
@@ -40,7 +39,7 @@
                             <div class="dropdown">
                                 <div class="dropdown-trigger">
                                     <button class="button is-small" aria-haspopup="true" aria-controls="season-dropdown">
-                                        <span>Сезон 2024</span>
+                                        <span></span>
                                         <span class="icon is-small">
                                             <i class="fas fa-chevron-down"></i>
                                         </span>
@@ -48,18 +47,6 @@
                                 </div>
                                 <div class="dropdown-menu" id="season-dropdown" role="menu">
                                     <div class="dropdown-content">
-                                        <a href="#" class="dropdown-item is-active">
-                                            <span class="icon is-small">
-                                                <i class="fas fa-check"></i>
-                                            </span>
-                                            <span>Сезон 2024</span>
-                                        </a>
-                                        <a href="#" class="dropdown-item">
-                                            <span>Сезон 2023</span>
-                                        </a>
-                                        <a href="#" class="dropdown-item">
-                                            <span>Сезон 2022</span>
-                                        </a>
                                         <hr class="dropdown-divider">
                                         <a href="#" class="dropdown-item add-season-item" data-target="add-season-modal">
                                             <span class="icon is-small">
@@ -77,9 +64,9 @@
                         </div>
                         <div class="control">
                             <button class="button is-small is-white profile-button">
-                                <span class="icon">
-                                    <i class="fas fa-user"></i>
-                                </span>
+                            <span class="icon">
+                                <i class="fas fa-user"></i>
+                            </span>
                             </button>
                         </div>
                     </div>
@@ -99,47 +86,96 @@
                     </div>
                     <ul class="menu-list">
                         <li>
-                            <a class="is-active is-flex is-align-items-center">
-                            <span class="icon is-small mr-3">
-                                <i class="fas fa-tachometer-alt"></i>
-                            </span>
+                            <a class="is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </span>
                                 <span>Панель управления</span>
                             </a>
                         </li>
                         <li>
-                            <a href="/fields/fields.html" class="is-flex is-align-items-center">
-                            <span class="icon is-small mr-3">
-                                <i class="fas fa-tractor"></i>
-                            </span>
+                            <a href="/fields/" class="is-active is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-seedling"></i>
+                                </span>
                                 <span>Поля</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="is-flex is-align-items-center">
-                            <span class="icon is-small mr-3">
-                                <i class="fas fa-seedling"></i>
-                            </span>
-                                <span>Севооборот</span>
+                            <a href="/fields_edit/" class="is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-tractor"></i>
+                                </span>
+                                <span>Изменение полей</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="is-flex is-align-items-center">
-                            <span class="icon is-small mr-3">
-                                <i class="fas fa-cogs"></i>
-                            </span>
-                                <span>Настройки</span>
+                            <a href="/recommendations/" class="is-flex is-align-items-center">
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-cogs"></i>
+                                </span>
+                                <span>Рекомендации</span>
                             </a>
                         </li>
                         <li>
                             <a href="#" class="is-flex is-align-items-center logout-item">
-                            <span class="icon is-small mr-3">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </span>
+                                <span class="icon is-small mr-3">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </span>
                                 <span>Выход</span>
                             </a>
                         </li>
                     </ul>
                 </aside>
+            </div>
+
+            <div class="column fields-column">
+                <aside class="fields-panel">
+                    <div class="panel is-shadowless">
+                        <div class="panel-heading is-flex is-justify-content-space-between is-align-items-center py-3">
+                            <h3 class="is-size-6 has-text-weight-semibold fields-title">Фермерские поля</h3>
+                            <button class="button is-small is-success add-field-btn">
+                                <span class="icon is-small">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>Добавить</span>
+                            </button>
+                        </div>
+
+                        <div class="panel-block">
+                            <p class="control has-icons-left">
+                                <input class="input is-small" type="text" placeholder="Поиск полей...">
+                                <span class="icon is-small is-left">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            </p>
+                        </div>
+
+                        <div class="fields-list">
+
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="fields-panel is-hidden">
+                    <div class="panel is-shadowless">
+                        <div class="panel-heading is-flex is-justify-content-space-between is-align-items-center py-3">
+                            <h3 class="is-size-6 has-text-weight-semibold fields-title">Добавленные поля</h3>
+                        </div>
+
+                        <div class="field-forms-container">
+                        </div>
+
+                        <div class="field control-form-buttons">
+                            <div class="control">
+                                <button type="button" class="button is-link is-light back-btn">Назад</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-success fields-button" type="submit">Добавить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -160,7 +196,8 @@
                     <div class="field">
                         <label class="label">Название сезона</label>
                         <div class="control">
-                            <input class="input" type="text" placeholder="Например: Сезон 2025" name="seasonName" required>
+                            <input class="input" type="text" placeholder="Например: Сезон 2025" name="seasonName"
+                                   required>
                         </div>
                     </div>
 
@@ -181,13 +218,16 @@
                     <div class="field">
                         <label class="label">Описание (необязательно)</label>
                         <div class="control">
-                            <textarea class="textarea" placeholder="Дополнительная информация о сезоне..." name="description" rows="2"></textarea>
+                            <textarea class="textarea" placeholder="Дополнительная информация о сезоне..."
+                                      name="description" rows="2"></textarea>
                         </div>
                     </div>
                 </form>
             </section>
             <footer class="modal-card-foot">
-                <button class="button is-success create-season-btn" type="submit" form="add-season-form">Создать сезон</button>
+                <button class="button is-success create-season-btn" type="submit" form="add-season-form">
+                    Создать сезон
+                </button>
                 <button class="button cancel-season-btn">Отмена</button>
             </footer>
         </div>
@@ -195,6 +235,6 @@
 </main>
 
 <script src="../assets/js/OpenLayers.js"></script>
-<script src="dashboard.js" type="module"></script>
+<script src="index.js" type="module"></script>
 </body>
 </html>
