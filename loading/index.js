@@ -19,7 +19,7 @@ function getRedirectUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   const redirectUrl = urlParams.get('redirect') ||
     localStorage.getItem('redirectUrl') ||
-    '/dashboard/dashboard.html';
+    '/dashboard/';
 
   localStorage.removeItem('redirectUrl');
   return redirectUrl;
@@ -41,9 +41,9 @@ function updateStatus(message, type = 'default') {
 
 document.addEventListener('DOMContentLoaded', function() {
   const checkSteps = [
-    { delay: 800, message: 'Проверка токена' },
-    { delay: 600, message: 'Загрузка данных' },
-    { delay: 600, message: 'Проверка прав' }
+    { delay: 500, message: 'Проверка токена' },
+    { delay: 500, message: 'Загрузка данных' },
+    { delay: 200, message: 'Проверка прав' }
   ];
 
   let currentStep = 0;
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       setTimeout(() => {
         window.location.href = redirectUrl;
-      }, 1000);
+      }, 500);
     } else {
       updateStatus('Требуется авторизация', 'error');
 
@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       setTimeout(() => {
-        window.location.href = '/login/login.html';
-      }, 1500);
+        window.location.href = '/login/';
+      }, 500);
     }
   }
 
@@ -91,6 +91,6 @@ window.addEventListener('error', function(e) {
   updateStatus('Ошибка проверки', 'error');
 
   setTimeout(() => {
-    window.location.href = '/login/login.html';
-  }, 2000);
+    window.location.href = '/login/';
+  }, 500);
 });
