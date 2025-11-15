@@ -7,69 +7,6 @@ export class FieldManager {
   static currentFields = [];
   static temporaryFeatures = [];
 
-  static sampleRecommendations = [
-    {
-      id: 1,
-      crop_name: "Горох",
-      family_name: "Бобовые",
-      score: 95,
-      compatibility: "excellent",
-      reasons: [
-        "Бобовые обогащают почву азотом",
-        "Хороший предшественник для текущей культуры (пшеница)",
-        "Соответствует кислотности почвы (pH 6.2)"
-      ],
-      rotation_interval: 2,
-      nutrient_demand: "low",
-      water_demand: "medium"
-    },
-    {
-      id: 2,
-      crop_name: "Огурец",
-      family_name: "Тыквенные",
-      score: 82,
-      compatibility: "good",
-      reasons: [
-        "Разные типы корневых систем с предшественником",
-        "Подходит для суглинистой почвы",
-        "Хорошая диверсификация севооборота"
-      ],
-      rotation_interval: 2,
-      nutrient_demand: "high",
-      water_demand: "high"
-    },
-    {
-      id: 3,
-      crop_name: "Морковь",
-      family_name: "Зонтичные",
-      score: 78,
-      compatibility: "good",
-      reasons: [
-        "Нейтральная культура для севооборота",
-        "Не требовательна к питательным веществам",
-        "Хорошо растет после злаковых"
-      ],
-      rotation_interval: 3,
-      nutrient_demand: "medium",
-      water_demand: "medium"
-    },
-    {
-      id: 4,
-      crop_name: "Картофель",
-      family_name: "Пасленовые",
-      score: 45,
-      compatibility: "poor",
-      reasons: [
-        "Нарушен интервал севооборота (2 года вместо 4)",
-        "Высокая потребность в питательных веществах",
-        "Риск накопления болезней"
-      ],
-      rotation_interval: 4,
-      nutrient_demand: "high",
-      water_demand: "medium"
-    }
-  ];
-
   static sampleCrops = [
     { id: 1, name: "Пшеница", family: "Злаки" },
     { id: 2, name: "Кукуруза", family: "Злаки" },
@@ -215,7 +152,10 @@ export class FieldManager {
     }
 
     if (this.config.showRecommendations && isActive) {
-      this.displayRecommendations(this.sampleRecommendations);
+      const yearSelect = document.getElementById('target-year');
+      yearSelect.setAttribute('data-field-id', field.id);
+
+      this.displayRecommendations(field.id);
     }
 
     return fieldElement;
@@ -654,10 +594,22 @@ export class FieldManager {
         }
 
         if (this.config.showRecommendations) {
-          this.displayRecommendations(this.sampleRecommendations);
+          const yearSelect = document.getElementById('target-year');
+          yearSelect.setAttribute('data-field-id', fieldItem.dataset.fieldId);
+
+          this.displayRecommendations(parseInt(fieldItem.dataset.fieldId));
         }
       }
     });
+
+    if (this.config.showRecommendations) {
+      const yearSelect = document.getElementById('target-year');
+      const fieldId = parseInt(yearSelect.getAttribute('data-field-id'));
+
+      yearSelect.addEventListener('change', function() {
+        FieldManager.displayRecommendations(fieldId, this.value);
+      })
+    }
   }
 
   static async loadFieldsFromAPI() {
@@ -900,13 +852,15 @@ export class FieldManager {
     });
 
     document.querySelector('.add-planting-btn').addEventListener('click', function() {
-      FieldManager.openPlantingModal(null);
+      const fieldId = parseInt(this.getAttribute('data-field-id'));
+      FieldManager.openPlantingModal(fieldId, null);
     });
 
     document.querySelectorAll('.edit-planting-btn').forEach(btn => {
       btn.addEventListener('click', function() {
+        const fieldId = parseInt(this.getAttribute('data-field-id'));
         const plantingId = parseInt(this.getAttribute('data-planting-id'));
-        FieldManager.openPlantingModal(plantingId);
+        FieldManager.openPlantingModal(fieldId, plantingId);
       });
     });
 
@@ -947,7 +901,7 @@ export class FieldManager {
     document.getElementById('field-modal').classList.remove('is-active');
   };
 
-  static openPlantingModal(plantingId = null) {
+  static openPlantingModal(fieldId, plantingId = null) {
     const modal = document.getElementById('planting-modal');
     const title = document.getElementById('planting-modal-title');
     const form = document.getElementById('planting-form');
@@ -982,6 +936,10 @@ export class FieldManager {
     document.querySelector('.modal-background').addEventListener('click', this.closePlantingModal);
     document.querySelector('.delete').addEventListener('click', this.closePlantingModal);
     document.querySelector('.cancel-planting-btn').addEventListener('click', this.closePlantingModal);
+
+    const saveButton = document.querySelector('#save-planting-btn');
+    saveButton.setAttribute('data-field-id', fieldId);
+    saveButton.setAttribute('data-planting-id', plantingId);
   };
 
   static closePlantingModal() {
@@ -1005,11 +963,12 @@ export class FieldManager {
     let fieldId = null;
     let plantingId = null;
 
-    if (button.classList.contains('add-planting-btn')) {
-      fieldId = button.getAttribute('field-id');
+
+    if (button.getAttribute('data-planting-id') === null) {
+      fieldId = button.getAttribute('data-field-id');
     } else {
-      fieldId = button.getAttribute('field-id')
-      plantingId = button.getAttribute('planting-id');
+      fieldId = button.getAttribute('data-field-id')
+      plantingId = button.getAttribute('data-planting-id');
     }
 
 
@@ -1024,8 +983,6 @@ export class FieldManager {
     };
 
     try {
-      console.log(button)
-
       let response;
       const url = Config.api.fields + '/' + fieldId + '/plantings';
       const method = plantingId ? 'PUT' : 'POST';
@@ -1067,23 +1024,49 @@ export class FieldManager {
     }
   }
 
-  static displayRecommendations(recommendations) {
+  static async loadRecommendations(fieldId, selectedYear) {
+    try {
+      const response = await fetch(`/api/recommendations/field/${fieldId}?target_year=${selectedYear}&limit=5`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ошибка! статус: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка при загрузке рекомендаций:', error);
+      return [];
+    }
+  }
+
+  static async displayRecommendations(fieldId, selectedYear = 2025) {
+    let recommendations = await this.loadRecommendations(fieldId, selectedYear);
+    let recommendationList = recommendations.recommendations;
+
+    console.log(recommendationList)
+
     const container = document.getElementById('recommendations-content');
     const loadingIndicator = document.getElementById('loading-indicator');
     const emptyState = document.getElementById('empty-state');
 
     loadingIndicator.classList.add('is-hidden');
 
-    if (recommendations.length === 0) {
+    if (recommendationList.length === 0) {
       emptyState.classList.remove('is-hidden');
       return;
     }
 
-    recommendations.sort((a, b) => b.score - a.score);
+    recommendationList.sort((a, b) => b.score - a.score);
 
     let html = '';
 
-    recommendations.forEach(rec => {
+    recommendationList.forEach(rec => {
       const compatibilityText = {
         'excellent': 'Отлично',
         'good': 'Хорошо',
