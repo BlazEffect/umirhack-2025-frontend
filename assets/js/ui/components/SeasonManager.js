@@ -42,6 +42,14 @@ export class SeasonManager {
     if (addButton) {
       addButton.addEventListener('click', this.handleAddSeasonClick.bind(this));
     }
+
+    const createButton = document.querySelector('#add-season-modal .create-season-btn');
+    if (createButton) {
+      createButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.handleSeasonFormSubmit(e);
+      });
+    }
   }
 
   static handleSeasonClick(event) {
@@ -63,14 +71,6 @@ export class SeasonManager {
 
   static async initializeSeasons() {
     let seasons = await this.loadSeasonsFromAPI();
-
-    if (!seasons || seasons.length === 0) {
-      seasons = [
-        { id: '2024', name: 'Сезон 2024' },
-        { id: '2023', name: 'Сезон 2023' },
-        { id: '2022', name: 'Сезон 2022' }
-      ];
-    }
 
     this.updateSeasonsDropdown(seasons);
 
@@ -130,10 +130,10 @@ export class SeasonManager {
     seasons.forEach(season => {
       const seasonElement = document.createElement('a');
       seasonElement.href = '#';
-      seasonElement.className = `dropdown-item ${season.id === activeSeasonId ? 'is-active' : ''}`;
+      seasonElement.className = `dropdown-item ${season.id == activeSeasonId ? 'is-active' : ''}`;
       seasonElement.dataset.seasonId = season.id;
 
-      if (season.id === activeSeasonId) {
+      if (season.id == activeSeasonId) {
         seasonElement.innerHTML = `
           <span class="icon is-small">
             <i class="fas fa-check"></i>
@@ -195,12 +195,129 @@ export class SeasonManager {
     }
   }
 
+  static closeAddSeasonModal() {
+    const modal = document.getElementById('add-season-modal');
+    if (modal) {
+      modal.classList.remove('is-active');
+
+      const form = document.getElementById('add-season-form');
+      if (form) {
+        form.reset();
+      }
+    }
+  }
+
+  static async handleSeasonFormSubmit(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('add-season-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const seasonData = {
+      name: formData.get('seasonName'),
+      date_start: formData.get('startDate'),
+      date_end: formData.get('endDate'),
+    };
+
+    if (!this.validateSeasonData(seasonData)) {
+      return;
+    }
+
+    try {
+      const modal = document.getElementById('add-season-modal');
+      const submitButton = modal.querySelector('.create-season-btn');
+
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
+      submitButton.disabled = true;
+
+      const response = await fetch(Config.api.seasons, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(seasonData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newSeason = await response.json();
+
+      EventManager.emit('notification:show', {
+        message: `Сезон "${newSeason.name}" успешно создан!`,
+        type: 'success'
+      });
+
+      this.closeAddSeasonModal();
+
+      EventManager.emit('seasons:needRefresh');
+    } catch (error) {
+      console.error('Ошибка при создании сезона:', error);
+      EventManager.emit('notification:show', {
+        message: 'Ошибка при создании сезона. Попробуйте еще раз.',
+        type: 'error'
+      });
+
+      const modal = document.getElementById('add-season-modal');
+      const submitButton = modal.querySelector('.create-season-btn');
+      if (submitButton) {
+        submitButton.innerHTML = 'Создать сезон';
+        submitButton.disabled = false;
+      }
+    }
+  }
+
+  static validateSeasonData(data) {
+    if (!data.name || data.name.trim().length === 0) {
+      EventManager.emit('notification:show', {
+        message: 'Введите название сезона',
+        type: 'warning'
+      });
+      return false;
+    }
+
+    if (!data.date_start || !data.date_end) {
+      EventManager.emit('notification:show', {
+        message: 'Заполните даты начала и окончания',
+        type: 'warning'
+      });
+      return false;
+    }
+
+    const startDate = new Date(data.date_start);
+    const endDate = new Date(data.date_end);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (startDate < today) {
+      EventManager.emit('notification:show', {
+        message: 'Дата начала не может быть в прошлом',
+        type: 'warning'
+      });
+      return false;
+    }
+
+    if (endDate <= startDate) {
+      EventManager.emit('notification:show', {
+        message: 'Дата окончания должна быть после даты начала',
+        type: 'warning'
+      });
+      return false;
+    }
+
+    return true;
+  }
+
   static async loadSeasonsFromAPI() {
     try {
       const response = await fetch(Config.api.seasons, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
       });
 
