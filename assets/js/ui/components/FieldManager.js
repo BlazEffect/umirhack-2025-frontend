@@ -83,9 +83,6 @@ export class FieldManager {
     { id: 10, name: "Капуста", family: "Капустные" }
   ];
 
-  static currentFieldId = null;
-  static currentPlantingId = null;
-
   static config = {
     focusOnMap: true,
     drawFieldsOnMap: true,
@@ -138,6 +135,22 @@ export class FieldManager {
     EventManager.on('field:delete', async (fieldId) => {
       await this.deleteFieldFromAPI(fieldId);
     });
+
+    if (this.config.showDetails) {
+      this.setupPlantingFormHandler();
+    }
+  }
+
+  static setupPlantingFormHandler() {
+    const saveButton = document.getElementById('save-planting-btn');
+    const form = document.getElementById('planting-form');
+
+    if (saveButton && form) {
+      saveButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.savePlanting(e);
+      });
+    }
   }
 
   static renderFieldsList(fieldsData) {
@@ -816,7 +829,7 @@ export class FieldManager {
                             <i class="fas fa-history"></i>
                             История посадок
                         </h3>
-                        <button class="button is-primary is-small add-planting-btn">
+                        <button class="button is-primary is-small add-planting-btn" data-field-id="${field.id}">
                             <span class="icon">
                                 <i class="fas fa-plus"></i>
                             </span>
@@ -854,10 +867,10 @@ export class FieldManager {
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="edit-btn edit-planting-btn" data-planting-id="${planting.id}">
+                                                <button class="edit-btn edit-planting-btn" data-planting-id="${planting.id}" data-field-id="${field.id}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button class="delete-btn delete-planting-btn" data-planting-id="${planting.id}">
+                                                <button class="delete-btn delete-planting-btn" data-planting-id="${planting.id}" data-field-id="${field.id}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -900,7 +913,8 @@ export class FieldManager {
     document.querySelectorAll('.delete-planting-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const plantingId = parseInt(this.getAttribute('data-planting-id'));
-        FieldManager.deletePlanting(plantingId);
+        const fieldId = parseInt(this.getAttribute('data-field-id'));
+        FieldManager.deletePlanting(plantingId, fieldId);
       });
     });
   };
@@ -944,8 +958,7 @@ export class FieldManager {
 
     if (plantingId) {
       title.textContent = 'Редактировать посадку';
-      this.currentPlantingId = plantingId;
-      const field = this.sampleFields.find(f => f.plantings.some(p => p.id === plantingId));
+      const field = this.currentFields.find(f => f.plantings.some(p => p.id === plantingId));
       if (field) {
         const planting = field.plantings.find(p => p.id === plantingId);
         const crop = this.sampleCrops.find(c => c.name === planting.crop_name);
@@ -960,7 +973,6 @@ export class FieldManager {
       }
     } else {
       title.textContent = 'Добавить посадку';
-      this.currentPlantingId = null;
       form.reset();
       form.year.value = new Date().getFullYear();
     }
@@ -976,75 +988,84 @@ export class FieldManager {
     document.getElementById('planting-modal').classList.remove('is-active');
   };
 
-  static saveField() {
-    const form = document.getElementById('field-form');
-    const formData = new FormData(form);
+  static async savePlanting(event) {
+    const button = event.target;
 
-    console.log('Сохранение поля:', {
-      name: formData.get('name'),
-      area: formData.get('area'),
-      soil_type: formData.get('soil_type'),
-      coordinates: formData.get('coordinates'),
-      description: formData.get('description')
-    });
-
-    EventManager.emit('notification:show', {
-      message: 'Поле успешно сохранено!',
-      type: 'success'
-    });
-
-    this.closeFieldModal();
-
-    if (this.currentFieldId) {
-      this.displayFieldDetails(this.currentFieldId);
-    }
-  };
-
-  static savePlanting() {
     const form = document.getElementById('planting-form');
     const formData = new FormData(form);
-    const cropId = formData.get('crop_id');
-    const crop = this.sampleCrops.find(c => c.id === parseInt(cropId));
 
-    console.log('Сохранение посадки:', {
-      field_id: this.currentFieldId,
-      crop_id: cropId,
-      crop_name: crop ? crop.name : '',
-      year: formData.get('year'),
-      season: formData.get('season'),
-      planting_date: formData.get('planting_date'),
-      harvest_date: formData.get('harvest_date'),
-      yield_amount: formData.get('yield_amount'),
-      yield_quality: formData.get('yield_quality'),
-      notes: formData.get('notes')
-    });
-
-    EventManager.emit('notification:show', {
-      message: 'Посадка успешно сохранена!',
-      type: 'success'
-    });
-
-    this.closePlantingModal();
-
-    if (this.currentFieldId) {
-      this.displayFieldDetails(this.currentFieldId);
+    if (!formData.get('crop_id') || !formData.get('year') || !formData.get('season')) {
+      EventManager.emit('notification:show', {
+        message: 'Заполните обязательные поля: культура, год и сезон',
+        type: 'error'
+      });
+      return;
     }
-  };
 
-  static deletePlanting(plantingId) {
-    if (confirm('Вы уверены, что хотите удалить эту посадку?')) {
-      console.log('Удаление посадки:', plantingId);
+    let fieldId = null;
+    let plantingId = null;
+
+    if (button.classList.contains('add-planting-btn')) {
+      fieldId = button.getAttribute('field-id');
+    } else {
+      fieldId = button.getAttribute('field-id')
+      plantingId = button.getAttribute('planting-id');
+    }
+
+
+    const plantingData = {
+      crop_id: parseInt(formData.get('crop_id')),
+      season_id: parseInt(formData.get('season')),
+      planting_date: formData.get('planting_date') || null,
+      harvest_date: formData.get('harvest_date') || null,
+      yield_amount: formData.get('yield_amount') ? parseFloat(formData.get('yield_amount')) : null,
+      yield_quality: formData.get('yield_quality') || null,
+      notes: formData.get('notes') || null
+    };
+
+    try {
+      console.log(button)
+
+      let response;
+      const url = Config.api.fields + '/' + fieldId + '/plantings';
+      const method = plantingId ? 'PUT' : 'POST';
+      const endpoint = plantingId ? `${url}/${plantingId}` : url;
+
+      response = await fetch(endpoint, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify(plantingData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ошибка! статус: ${response.status}`);
+      }
+
+      const result = await response.json();
 
       EventManager.emit('notification:show', {
-        message: 'Посадка успешно удалена!',
+        message: `Посадка успешно ${plantingId ? 'обновлена' : 'добавлена'}!`,
         type: 'success'
       });
 
-      if (this.currentFieldId) {
-        this.displayFieldDetails(this.currentFieldId);
+      this.closePlantingModal();
+
+      if (fieldId) {
+        await this.reloadFieldsList();
+        this.displayFieldDetails(fieldId);
       }
+
+    } catch (error) {
+      console.error('Ошибка при сохранении посадки:', error);
+      EventManager.emit('notification:show', {
+        message: 'Ошибка при сохранении посадки. Попробуйте еще раз.',
+        type: 'error'
+      });
     }
-  };
+  }
 
   static displayRecommendations(recommendations) {
     const container = document.getElementById('recommendations-content');
@@ -1231,6 +1252,41 @@ export class FieldManager {
       console.error('Ошибка при сохранении полей:', error);
       EventManager.emit('notification:show', {
         message: 'Ошибка при сохранении полей. Попробуйте еще раз.',
+        type: 'error'
+      });
+    }
+  }
+
+  static async deletePlanting(plantingId, fieldId) {
+    if (!confirm('Вы уверены, что хотите удалить эту посадку?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${Config.api.fields}/${fieldId}/plantings/${plantingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ошибка! статус: ${response.status}`);
+      }
+
+      EventManager.emit('notification:show', {
+        message: 'Посадка успешно удалена!',
+        type: 'success'
+      });
+
+      await this.reloadFieldsList();
+      this.displayFieldDetails(fieldId);
+
+    } catch (error) {
+      console.error('Ошибка при удалении посадки:', error);
+      EventManager.emit('notification:show', {
+        message: 'Ошибка при удалении посадки',
         type: 'error'
       });
     }
