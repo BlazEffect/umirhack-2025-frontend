@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       setTimeout(() => {
-        window.location.href = '/login/';
+        window.location.href = '/auth/login/';
       }, 500);
     }
   }
@@ -91,6 +91,6 @@ window.addEventListener('error', function(e) {
   updateStatus('Ошибка проверки', 'error');
 
   setTimeout(() => {
-    window.location.href = '/login/';
+    window.location.href = '/auth/login/';
   }, 500);
 });
