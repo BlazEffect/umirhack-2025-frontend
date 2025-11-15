@@ -10,36 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const passwordInput = document.getElementById('password');
   const submitButton = registerForm.querySelector('button[type="submit"]');
 
-  function showMessage(message, type = 'error') {
-    const existingMessage = registerForm.querySelector('.message-custom');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message-custom p-4 ${type === 'error' ? 'message-error' : 'message-success'}`;
-    messageDiv.innerHTML = `
-            <div class="is-flex is-justify-content-space-between is-align-items-center">
-                <span>${message}</span>
-                <button class="delete is-small"></button>
-            </div>
-        `;
-
-    registerForm.insertBefore(messageDiv, registerForm.firstChild);
-
-    messageDiv.querySelector('.delete').addEventListener('click', function () {
-      messageDiv.remove();
-    });
-
-    if (type === 'success') {
-      setTimeout(() => {
-        if (messageDiv.parentNode) {
-          messageDiv.remove();
-        }
-      }, 5000);
-    }
-  }
-
   function showFieldError(input, message) {
     hideFieldError(input);
 
@@ -126,10 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    if (!isValid) {
-      showMessage('Пожалуйста, исправьте ошибки в форме');
-    }
-
     return isValid;
   }
 
@@ -150,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       setLoading(true);
 
-      const response = await fetch('/api/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,20 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.message || 'Произошла ошибка при регистрации');
       }
 
-      showMessage('Регистрация прошла успешно! Перенаправление на страницу входа...', 'success');
-
       registerForm.reset();
 
       setTimeout(() => {
-        window.location.href = '/login/login.html';
-      }, 3000);
+        window.location.href = '/auth/login/';
+      }, 10);
 
     } catch (error) {
-      console.error('Ошибка:', error);
-
-      if (!registerForm.querySelector('.help.is-error')) {
-        showMessage('Произошла ошибка при отправке формы');
-      }
+      console.error('Ошибка при регистрации:', error);
     } finally {
       setLoading(false);
     }
