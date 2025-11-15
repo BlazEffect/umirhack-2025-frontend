@@ -4,6 +4,7 @@ import { Config } from '../../core/Config.js';
 export class SeasonManager {
   static config = {
     enableCropsUpdate: true,
+    enableDropdownUpdate: true
   };
 
   static init(userConfig = {}) {
@@ -81,6 +82,11 @@ export class SeasonManager {
     if (this.config.enableCropsUpdate) {
       EventManager.emit('season:changed', this.getActiveSeasonFromStorage());
     }
+
+    if (this.config.enableDropdownUpdate) {
+      this.updateSeasonsSelect(seasons)
+    }
+
     EventManager.emit('seasons:dropdownUpdated');
   }
 
@@ -354,5 +360,35 @@ export class SeasonManager {
       console.error('Ошибка при загрузке культур для сезона:', error);
       return null;
     }
+  }
+
+  static updateSeasonsSelect(seasons = null) {
+    const selectElement = document.querySelector('select[name="season"]');
+
+    if (!selectElement) return;
+
+    if (!seasons) {
+      seasons = Array.from(selectElement.querySelectorAll('option[data-season-id]'))
+        .map(option => ({
+          id: option.dataset.seasonId,
+          name: option.textContent,
+          value: option.value
+        }));
+    }
+
+    selectElement.innerHTML = '';
+
+    seasons.forEach(season => {
+      const option = document.createElement('option');
+      option.value = season.value || season.id;
+      option.textContent = season.name;
+      option.dataset.seasonId = season.id;
+
+      if (season.id == this.getActiveSeasonFromStorage()) {
+        option.selected = true;
+      }
+
+      selectElement.appendChild(option);
+    });
   }
 }

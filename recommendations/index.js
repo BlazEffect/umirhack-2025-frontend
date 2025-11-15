@@ -17,7 +17,9 @@ import {Config} from "../assets/js/core/Config.js";
     SearchManager.init();
     ModalManager.init();
 
-    SeasonManager.init();
+    SeasonManager.init({
+      enableDropdownUpdate: false
+    });
     FieldManager.init({
       focusOnMap: false,
       drawFieldsOnMap: false,

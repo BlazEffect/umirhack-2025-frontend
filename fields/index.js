@@ -22,7 +22,9 @@ import {Config} from "../assets/js/core/Config.js";
     SearchManager.init();
     ModalManager.init();
 
-    SeasonManager.init();
+    SeasonManager.init({
+      enableDropdownUpdate: false
+    });
     FieldManager.init({
       showDetails: false,
       showRecommendations: false

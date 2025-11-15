@@ -213,11 +213,11 @@
     </div>
 </main>
 
-<div class="modal" id="field-modal">
+<div class="modal" id="field-modal" data-field-id="">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title" id="field-modal-title">Добавить новое поле</p>
+            <p class="modal-card-title" id="field-modal-title">Изменить поле</p>
             <button class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
@@ -249,21 +249,6 @@
                                 <option value="песчаная">Песчаная</option>
                             </select>
                         </div>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label class="label">Координаты (WKT или JSON)</label>
-                    <div class="control">
-                        <textarea class="textarea coordinates-input" placeholder='{"type": "Polygon", "coordinates": [...]}' name="coordinates" rows="3"></textarea>
-                    </div>
-                    <p class="help">Необязательное поле. Можно ввести в формате WKT или GeoJSON</p>
-                </div>
-
-                <div class="field">
-                    <label class="label">Описание</label>
-                    <div class="control">
-                        <textarea class="textarea" placeholder="Дополнительная информация о поле..." name="description" rows="2"></textarea>
                     </div>
                 </div>
             </form>
@@ -310,10 +295,6 @@
                             <div class="control">
                                 <div class="select is-fullwidth">
                                     <select name="season" required>
-                                        <option value="весенний">Весенний</option>
-                                        <option value="летний">Летний</option>
-                                        <option value="осенний">Осенний</option>
-                                        <option value="основной">Основной</option>
                                     </select>
                                 </div>
                             </div>

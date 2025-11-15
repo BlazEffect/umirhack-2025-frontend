@@ -70,77 +70,6 @@ export class FieldManager {
     }
   ];
 
-  static sampleFields = [
-    {
-      id: 1,
-      name: "Северное поле",
-      area_ha: 5.2,
-      soil_type: "суглинок",
-      coordinates: [[4200785.607414969, 7543425.726029336],
-        [4184889.2994700456, 7495639.714544913],
-        [4216783.808550349, 7496047.274228949],
-        [4233291.512954693, 7513164.650363283],
-        [4200785.607414969, 7543425.726029336]],
-      plantings: [
-        {
-          id: 1,
-          crop_name: "Пшеница",
-          crop_family: "Злаки",
-          year: 2023,
-          season: "основной",
-          planting_date: "2023-04-15",
-          harvest_date: "2023-08-20",
-          yield_amount: 3.2,
-          yield_quality: "good",
-          notes: "Хороший урожай, благоприятные погодные условия"
-        },
-        {
-          id: 2,
-          crop_name: "Кукуруза",
-          crop_family: "Злаки",
-          year: 2022,
-          season: "основной",
-          planting_date: "2022-05-01",
-          harvest_date: "2022-09-15",
-          yield_amount: 5.8,
-          yield_quality: "excellent",
-          notes: "Рекордный урожай"
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: "Южное поле",
-      area_ha: 3.8,
-      soil_type: "чернозем",
-      coordinates: null,
-      description: "Поле в южной части с хорошим дренажем",
-      plantings: [
-        {
-          id: 3,
-          crop_name: "Картофель",
-          crop_family: "Пасленовые",
-          year: 2023,
-          season: "весенний",
-          planting_date: "2023-04-10",
-          harvest_date: "2023-08-30",
-          yield_amount: 25.5,
-          yield_quality: "good",
-          notes: "Средняя урожайность, проблемы с колорадским жуком"
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: "Западный участок",
-      area_ha: 2.1,
-      soil_type: "супесь",
-      coordinates: null,
-      description: "Небольшой участок для экспериментальных культур",
-      plantings: []
-    }
-  ];
-
   static sampleCrops = [
     { id: 1, name: "Пшеница", family: "Злаки" },
     { id: 2, name: "Кукуруза", family: "Злаки" },
@@ -486,6 +415,26 @@ export class FieldManager {
     }
   }
 
+  static async updateFieldsToAPI(fieldData) {
+    try {
+      const response = await fetch(Config.api.fields + `/${fieldData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify(fieldData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ошибка! статус: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Ошибка при массовом сохранении полей:', error);
+      throw error;
+    }
+  }
+
   static async deleteFieldFromAPI(fieldId) {
     try {
       const response = await fetch(`${Config.api.fields}/${fieldId}`, {
@@ -700,7 +649,7 @@ export class FieldManager {
 
   static async loadFieldsFromAPI() {
     try {
-      const response = await fetch(Config.api.fields, {
+      const response = await fetch(Config.api.fields + '/with/plantings', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -802,7 +751,7 @@ export class FieldManager {
   };
 
   static displayFieldDetails(fieldId) {
-    const field = this.sampleFields.find(f => f.id === fieldId);
+    const field = this.currentFields.find(f => f.id === fieldId);
     const container = document.getElementById('field-edit-content');
 
     if (!field) return;
@@ -813,7 +762,6 @@ export class FieldManager {
 
     let html = `
             <div class="edit-form-container">
-                <!-- Статистика -->
                 <div class="stats-cards">
                     <div class="stat-card">
                         <div class="stat-number">${field.area_ha}</div>
@@ -852,7 +800,6 @@ export class FieldManager {
                     <div class="content">
                         <p><strong>Площадь:</strong> ${field.area_ha} гектаров</p>
                         <p><strong>Тип почвы:</strong> ${field.soil_type}</p>
-                        ${field.description ? `<p><strong>Описание:</strong> ${field.description}</p>` : ''}
                         ${field.coordinates ? `
                             <div class="map-preview">
                                 <i class="fas fa-map-marker-alt mr-2"></i>
@@ -960,29 +907,26 @@ export class FieldManager {
 
   static openFieldModal(fieldId = null) {
     const modal = document.getElementById('field-modal');
-    const title = document.getElementById('field-modal-title');
     const form = document.getElementById('field-form');
 
     if (fieldId) {
-      title.textContent = 'Редактировать поле';
-      const field = this.sampleFields.find(f => f.id === fieldId);
+      const field = this.currentFields.find(f => f.id === fieldId);
       if (field) {
         form.name.value = field.name;
         form.area.value = field.area_ha;
         form.soil_type.value = field.soil_type;
-        form.coordinates.value = field.coordinates || '';
-        form.description.value = field.description || '';
       }
     } else {
-      title.textContent = 'Добавить новое поле';
       form.reset();
     }
 
     modal.classList.add('is-active');
+    modal.setAttribute('data-field-id', fieldId);
 
     document.querySelector('.modal-background').addEventListener('click', this.closeFieldModal);
     document.querySelector('.delete').addEventListener('click', this.closeFieldModal);
     document.querySelector('.cancel-field-btn').addEventListener('click', this.closeFieldModal);
+    document.querySelector('#save-field-btn').addEventListener('click', this.saveFieldBtn);
   };
 
   static closeFieldModal() {
@@ -1251,4 +1195,44 @@ export class FieldManager {
 
     this.closeApplyModal();
   };
+
+  static async saveFieldBtn(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('field-modal');
+    const name = form.querySelector('input[name="name"]').value;
+    const area = form.querySelector('input[name="area"]').value;
+    const soilType = form.querySelector('select[name="soil_type"]').value;
+    const fieldId = form.getAttribute('data-field-id');
+
+    if (!form) return;
+
+    const fieldsData = {
+      id: fieldId,
+      name: name,
+      area_ha: area,
+      soil_type: soilType,
+    };
+
+    try {
+      await FieldManager.updateFieldsToAPI(fieldsData);
+
+      EventManager.emit('notification:show', {
+        message: `Успешно сохранено 1 поля!`,
+        type: 'success'
+      });
+
+      FieldManager.showFieldsList();
+
+      await FieldManager.reloadFieldsList();
+
+      FieldManager.closeFieldModal();
+    } catch (error) {
+      console.error('Ошибка при сохранении полей:', error);
+      EventManager.emit('notification:show', {
+        message: 'Ошибка при сохранении полей. Попробуйте еще раз.',
+        type: 'error'
+      });
+    }
+  }
 }

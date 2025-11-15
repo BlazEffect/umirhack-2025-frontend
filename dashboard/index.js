@@ -21,7 +21,8 @@ import {Config} from "../assets/js/core/Config.js";
     ModalManager.init();
 
     SeasonManager.init({
-      enableCropsUpdate: false
+      enableCropsUpdate: false,
+      enableDropdownUpdate: false
     });
     FieldManager.init({
       showDetails: false,
