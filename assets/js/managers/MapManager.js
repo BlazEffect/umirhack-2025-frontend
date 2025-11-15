@@ -108,7 +108,7 @@ export const MapManager = {
   showFieldInfo: function(feature) {
     const fieldInfo = {
       name: feature.get('name'),
-      area: feature.get('area'),
+      area: feature.get('area_ha'),
       crop: feature.get('crop'),
       id: feature.get('id')
     };
@@ -373,10 +373,6 @@ export const MapManager = {
       this.displayFieldsFromData(data);
     });
 
-    EventManager.on('map:saveField', (feature, fieldsData) => {
-      this.saveField(feature, fieldsData);
-    });
-
     EventManager.on('map:removeFeature', (feature) => {
       this.removeFeature(feature);
     });
@@ -573,8 +569,8 @@ export const MapManager = {
           geometry: polygon,
           id: field.id,
           name: field.name,
-          area: field.area,
-          crop: field.crop,
+          area_ha: field.area_ha,
+          crop: field.crop || 'Нет культуры',
           isTemporary: false,
           type: 'field'
         });
@@ -619,49 +615,6 @@ export const MapManager = {
         offsetY: -15
       })
     });
-  },
-
-  saveField: function(features, fieldsData) {
-    if (features.length !== fieldsData.length) {
-      console.error('Количество фич не соответствует количеству данных полей');
-      return false;
-    }
-
-    const results = [];
-
-    features.forEach((feature, index) => {
-      const fieldData = fieldsData[index];
-
-      if (fieldData && fieldData.id) {
-        feature.set('id', fieldData.id);
-        feature.set('name', fieldData.name);
-        feature.set('area', fieldData.area);
-        feature.set('crop', fieldData.crop);
-        feature.set('isTemporary', false);
-
-        if (fieldData.coordinates && fieldData.coordinates.length >= 3) {
-          const polygon = new ol.geom.Polygon([fieldData.coordinates]);
-          feature.setGeometry(polygon);
-        }
-
-        feature.setStyle(this.getFieldStyle(fieldData));
-
-        results.push({
-          success: true,
-          feature: feature,
-          fieldData: fieldData
-        });
-      } else {
-        console.error('Отсутствуют данные поля или ID для фичи', feature);
-        results.push({
-          success: false,
-          feature: feature,
-          error: 'Отсутствуют данные поля или ID'
-        });
-      }
-    });
-
-    return features.length === 1 ? results[0] : results;
   },
 
   removeFeature: function(feature) {

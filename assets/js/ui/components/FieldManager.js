@@ -231,7 +231,7 @@ export class FieldManager {
     fieldElement.href = '#';
     fieldElement.dataset.fieldId = field.id;
 
-    const cropIcon = this.getCropIcon(field.crop);
+    const cropIcon = this.getCropIcon(field.crop || '');
 
     fieldElement.innerHTML = `
       <div class="is-flex is-justify-content-space-between is-align-items-center">
@@ -244,13 +244,13 @@ export class FieldManager {
               <i class="${cropIcon}"></i>
             </span>
             ` : ''}
-            ${field.crop}
+            ${field.crop || 'Нет культуры'}
           </small>
         </div>
         <div class="is-flex is-align-items-end is-flex-direction-column gap-4">
           <button class="delete field-delete" data-field-id="${field.id}"></button>
           <br>
-          <span class="tag is-light is-success field-size">${field.area} га</span>
+          <span class="tag is-light is-success field-size">${field.area_ha} га</span>
         </div>
       </div>
     `;
@@ -354,7 +354,6 @@ export class FieldManager {
     for (const feature of this.temporaryFeatures) {
       const fieldName = feature.get('fieldName');
       const crop = feature.get('crop');
-      const description = feature.get('description');
 
       if (!fieldName || !crop) {
         errors.push(`Поле не заполнено: название или культура`);
@@ -363,17 +362,20 @@ export class FieldManager {
 
       try {
         const coordinates = feature.getGeometry().getCoordinates()[0];
-        const area = this.getFeatureArea(feature);
+        let area = 0;
+
+        this.getFeatureArea(feature, (mapArea) => {
+          area = mapArea;
+        });
 
         fieldsData.push({
           name: fieldName,
-          description: description,
-          crop: crop,
-          area: area,
+          area_ha: area,
           coordinates: coordinates,
+          soil_type: ''
         });
       } catch (error) {
-        errors.push(`Ошибка обработки поля: ${error.message}`);
+        errors.push(`Ошибка обработки поля`);
       }
     }
 
@@ -394,26 +396,21 @@ export class FieldManager {
     }
 
     try {
-      const savedFields = await this.saveFieldsToAPI(fieldsData);
-
-      if (savedFields) {
-        EventManager.emit('fields:saved', {
-          features: this.temporaryFeatures,
-          fieldsData: savedFields
-        });
-
-        this.temporaryFeatures = [];
-        this.fieldForms.clear();
-
-        EventManager.emit('notification:show', {
-          message: `Успешно сохранено ${fieldsData.length} полей!`,
-          type: 'success'
-        });
-
-        this.showFieldsList();
-
-        await this.reloadFieldsList();
+      for (const fieldData of fieldsData) {
+        await this.saveFieldsToAPI(fieldData);
       }
+
+      EventManager.emit('notification:show', {
+        message: `Успешно сохранено ${fieldsData.length} полей!`,
+        type: 'success'
+      });
+
+      this.showFieldsList();
+
+      await this.reloadFieldsList();
+
+      this.temporaryFeatures = [];
+      this.fieldForms.clear();
     } catch (error) {
       console.error('Ошибка при сохранении полей:', error);
       EventManager.emit('notification:show', {
@@ -469,25 +466,20 @@ export class FieldManager {
     }, 10);
   }
 
-  static async saveFieldsToAPI(fieldsData) {
+  static async saveFieldsToAPI(fieldData) {
     try {
       const response = await fetch(Config.api.fields, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         },
-        body: JSON.stringify({
-          action: 'save_multiple',
-          fields: fieldsData
-        })
+        body: JSON.stringify(fieldData)
       });
 
       if (!response.ok) {
         throw new Error(`HTTP ошибка! статус: ${response.status}`);
       }
-
-      const result = await response.json();
-      return result;
     } catch (error) {
       console.error('Ошибка при массовом сохранении полей:', error);
       throw error;
@@ -500,6 +492,7 @@ export class FieldManager {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
       });
 
@@ -711,6 +704,7 @@ export class FieldManager {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
       });
 
@@ -722,58 +716,6 @@ export class FieldManager {
 
     } catch (error) {
       console.error('Ошибка при загрузке полей из API:', error);
-
-      return [
-        {
-          "id": 1,
-          "name": "Поле №1",
-          "area": 45.2,
-          "crop": "Пшеница озимая",
-          "coordinates": [
-            [4151670.0856221057, 7513470.317794253],
-            [4147492.222254961, 7494824.604505069],
-            [4163490.423390341, 7499205.840791718],
-            [4151670.0856221057, 7513470.317794253]
-          ]
-        },
-        {
-          "id": 2,
-          "name": "Поле №2",
-          "area": 32.7,
-          "crop": "Кукуруза",
-          "coordinates": [
-            [4200785.607414969, 7543425.726029336],
-            [4184889.2994700456, 7495639.714544913],
-            [4216783.808550349, 7496047.274228949],
-            [4233291.512954693, 7513164.650363283],
-            [4200785.607414969, 7543425.726029336]
-          ]
-        },
-        {
-          "id": 3,
-          "name": "Поле №3",
-          "area": 28.5,
-          "crop": "Подсолнечник"
-        },
-        {
-          "id": 4,
-          "name": "Поле \"Северное\"",
-          "area": 56.3,
-          "crop": "Ячмень"
-        },
-        {
-          "id": 5,
-          "name": "Поле \"Южное\"",
-          "area": 41.8,
-          "crop": "Рапс"
-        },
-        {
-          "id": 6,
-          "name": "Поле \"Западное\"",
-          "area": 37.4,
-          "crop": "Соя"
-        }
-      ];
     }
   }
 
@@ -857,8 +799,6 @@ export class FieldManager {
     }
 
     EventManager.emit('field:focus', field);
-
-    EventManager.emit('field:selected', field.id);
   };
 
   static displayFieldDetails(fieldId) {
