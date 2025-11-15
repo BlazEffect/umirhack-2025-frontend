@@ -8,36 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const passwordInput = document.getElementById('password');
   const submitButton = loginForm.querySelector('button[type="submit"]');
 
-  function showMessage(message, type = 'error') {
-    const existingMessage = loginForm.querySelector('.message-custom');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message-custom p-4 ${type === 'error' ? 'message-error' : 'message-success'}`;
-    messageDiv.innerHTML = `
-            <div class="is-flex is-justify-content-space-between is-align-items-center">
-                <span>${message}</span>
-                <button class="delete is-small"></button>
-            </div>
-        `;
-
-    loginForm.insertBefore(messageDiv, loginForm.firstChild);
-
-    messageDiv.querySelector('.delete').addEventListener('click', function () {
-      messageDiv.remove();
-    });
-
-    if (type === 'success') {
-      setTimeout(() => {
-        if (messageDiv.parentNode) {
-          messageDiv.remove();
-        }
-      }, 5000);
-    }
-  }
-
   function showFieldError(input, message) {
     hideFieldError(input);
 
@@ -106,10 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    if (!isValid) {
-      showMessage('Пожалуйста, исправьте ошибки в форме');
-    }
-
     return isValid;
   }
 
@@ -128,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       setLoading(true);
 
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,21 +126,29 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.message || 'Произошла ошибка при авторизации');
       }
 
-      showMessage('Успешный вход! Перенаправление...', 'success');
+      const responseInfo = await fetch('/api/auth/me', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${data.access_token}`,
+        },
+      });
 
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.user));
+      const dataInfo = await responseInfo.json();
+
+      if (!responseInfo.ok) {
+        throw new Error(data.message || 'Произошла ошибка при авторизации');
+      }
+
+      localStorage.setItem('authToken', data.access_token);
+      localStorage.setItem('userData', JSON.stringify(dataInfo));
 
       setTimeout(() => {
-        window.location.href = '/loading/loading.html';
-      }, 1500);
+        window.location.href = '/loading/';
+      }, 10);
 
     } catch (error) {
       console.error('Ошибка:', error);
-
-      if (!loginForm.querySelector('.help.is-error')) {
-        showMessage('Произошла ошибка при отправке формы');
-      }
     } finally {
       setLoading(false);
     }

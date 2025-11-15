@@ -58,7 +58,7 @@ body {
 }
 
 .login-form-header_title {
-    margin: 24px 0
+    margin: 0 0 24px
 }
 
 .login-form-header_title-text {
@@ -237,24 +237,6 @@ body {
 
 .gap-4 {
     gap: 30px
-}
-
-.message-custom {
-    border-left: 4px solid;
-    border-radius: 6px;
-    margin-bottom: 1.5rem;
-}
-
-.message-error {
-    background-color: #fff5f5;
-    border-left-color: #fed7d7;
-    color: #c53030;
-}
-
-.message-success {
-    background-color: #f0fff4;
-    border-left-color: #9ae6b4;
-    color: #2d774a;
 }
 
 .input-error {
